@@ -6,4 +6,4 @@ google-cloud-texttospeech
 PyPDF2
 pytesseract
 Pillow
-pyngrok
+gunicorn
