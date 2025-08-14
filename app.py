@@ -505,7 +505,6 @@ def emotion_journal():
                            history=history,
                            music_videos=music_videos)
 
-pdfmetrics.registerFont(TTFont('Arial', r'C:\Windows\Fonts\arial.ttf'))
 
 @app.route('/export_pdf')
 def export_pdf():
