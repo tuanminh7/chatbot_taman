@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tâm An - Trợ lý AI (Voice)</title>
+<style>
+  :root{
+    --bg1:#eef5ff; --accent:#3b82f6; --bot:#e6f2ff; --user:#d7f9e1;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:linear-gradient(180deg,var(--bg1),#f7fbff);
+    display:flex;justify-content:center;align-items:center;height:100vh;
+  }
+
+  .frame{
+    width:420px;height:80vh;background:var(--card);border-radius:16px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.12);display:flex;flex-direction:column;overflow:hidden;
+  }
+
+  header{
+    padding:16px;background:linear-gradient(90deg,var(--accent),#2563eb);color:#fff;
+    display:flex;gap:12px;align-items:center;
+  }
+  header img{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,0.15)}
+  header h1{font-size:16px;margin:0}
+  header p{margin:0;font-size:12px;opacity:0.9}
+
+  #msgs{flex:1;padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg, rgba(59,130,246,0.03), transparent 30%);}
+  .bubble{max-width:78%;padding:10px 14px;border-radius:12px;box-shadow:0 2px 6px rgba(2,6,23,0.04);font-size:14px;line-height:1.4}
+  .row{display:flex;gap:10px;align-items:flex-end}
+  .row.bot{justify-content:flex-start}
+  .row.user{justify-content:flex-end}
+  .bubble.bot{background:var(--bot);border-bottom-left-radius:4px}
+  .bubble.user{background:var(--user);border-bottom-right-radius:4px}
+
+  .avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
+
+  footer{padding:12px;background:#fbfdff;display:flex;gap:10px;align-items:center;border-top:1px solid #eef2ff}
+  .mic{
+    width:64px;height:64px;border-radius:50%;background:linear-gradient(180deg,#ff5966,#ff3b5c);border:none;color:white;font-size:22px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(255,59,92,0.25);
+    transition:transform .12s,box-shadow .12s;
+  }
+  .mic.recording{background:linear-gradient(180deg,#00c853,#00b04a);box-shadow:0 12px 30px rgba(0,200,83,0.2);transform:scale(1.03)}
+  .controls{flex:1;display:flex;flex-direction:column;gap:8px}
+  .input-row{display:flex;gap:8px}
+  .txt{flex:1;padding:10px;border-radius:10px;border:1px solid #e6eefc;background:#fff}
+  .playFallback{font-size:13px;color:#374151;opacity:0.9}
+  audio{width:100%;margin-top:8px;border-radius:8px}
+</style>
+</head>
+<body>
+  <div class="frame">
+    <header>
+      <img src="/static/images/chat_voice.jpg" alt="bot">
+      <div>
+        <h1>Tâm An</h1>
+        <p>Trợ lý AI — Nói chuyện bằng giọng Việt chuẩn</p>
+      </div>
+    </header>
+
+    <div id="msgs"></div>
+
+    <footer>
+      <button id="mic" class="mic">🎙</button>
+      <div class="controls">
+        <div class="input-row">
+          <input id="textInput" class="txt" placeholder="Gõ câu hỏi hoặc bấm mic để nói..." />
+          <button id="sendBtn">Gửi</button>
+        </div>
+        <div class="playFallback" id="fallbackNote">Nếu audio không sẵn sàng, trình duyệt sẽ đọc lại bằng giọng mặc định.</div>
+      </div>
+    </footer>
+  </div>
+
+<script>
+const msgs = document.getElementById('msgs');
+const mic = document.getElementById('mic');
+const txt = document.getElementById('textInput');
+const sendBtn = document.getElementById('sendBtn');
+const fallbackNote = document.getElementById('fallbackNote');
+
+function addMessage(text, who, audioUrl=null) {
+  const row = document.createElement('div');
+  row.className = 'row ' + who;
+  const avatar = document.createElement('img');
+  avatar.className = 'avatar';
+  avatar.src = who === 'bot' ? '/static/images/chat_voice.jpg' : '/static/images/user.png';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble ' + who;
+  bubble.textContent = text;
+
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  if (audioUrl) {
+    // thêm audio player trong bubble
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.src = audioUrl;
+    audio.autoplay = true;
+    bubble.appendChild(audio);
+  }
+}
+
+// Fallback: nếu server không có audio thì dùng speechSynthesis
+function speakFallback(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'vi-VN';
+    u.rate = 1;
+    speechSynthesis.speak(u);
+  } catch (e) {
+    console.warn('Fallback TTS lỗi', e);
+  }
+}
+
+// Gửi message text lên server
+async function sendToServer(message) {
+  addMessage(message, 'user');
+  try {
+    const res = await fetch('/chat_tam_an', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message})
+    });
+    const data = await res.json();
+    const reply = data.reply || 'Xin lỗi, tôi không trả lời được.';
+    addMessage(reply, 'bot', data.audio_url || null);
+    if (!data.audio_url) speakFallback(reply);
+  } catch (e) {
+    addMessage('Lỗi server: không thể kết nối', 'bot');
+    speakFallback('Lỗi server, bạn thử lại sau nhé.');
+    console.error(e);
+  }
+}
+
+sendBtn.addEventListener('click', ()=> {
+  const v = txt.value.trim();
+  if (v) { sendToServer(v); txt.value=''; }
+});
+
+// Speech to text (Web Speech API)
+let recognition = null;
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'vi-VN';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = ()=> mic.classList.add('recording');
+  recognition.onend   = ()=> mic.classList.remove('recording');
+  recognition.onerror = (e)=> { console.error(e); mic.classList.remove('recording'); };
+
+  recognition.onresult = (evt)=> {
+    const text = evt.results[0][0].transcript;
+    sendToServer(text);
+  };
+
+  mic.addEventListener('click', ()=>{
+    try {
+      if (mic.classList.contains('recording')) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    } catch(e){ console.error(e); }
+  });
+
+} else {
+  // Browser không hỗ trợ SpeechRecognition
+  mic.addEventListener('click', ()=> alert('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Dùng Chrome hay Edge phiên bản mới nhé.'));
+}
+
+// Load welcome
+addMessage('Xin chào! Tôi là Tâm An — bạn muốn hỏi gì hôm nay?', 'bot');
+</script>
+</body>
+</html>

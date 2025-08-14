@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Đấu Trường Lịch Sử</title>
+    <style>
+        body {
+            background-color: #14213d;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 100px;
+        }
+        input, select {
+            padding: 10px;
+            font-size: 18px;
+            border-radius: 6px;
+            border: none;
+            width: 250px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #fca311;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        h2 {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🎓 Đấu Trường Lịch Sử</h2>
+    <form action="/start_game" method="POST">
+        <input type="text" name="nickname" placeholder="Nhập nickname của bạn" required>
+        <br>
+        <select name="bai" required>
+            <option value="" disabled selected>Chọn bài thi</option>
+            <option value="bai_1">📝 Bài 1: Lịch sử VN</option>
+            <option value="bai_2">📜 Bài 2: Lịch sử VN</option>
+        </select>
+        <br>
+        <button type="submit">Bắt đầu thi đấu</button>
+    </form>
+</body>
+</html>

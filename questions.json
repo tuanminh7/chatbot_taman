@@ -1,0 +1,296 @@
+{
+  "bai_1": [
+    {
+      "question": "Ai là người lãnh đạo khởi nghĩa Lam Sơn?",
+      "options": ["Trần Hưng Đạo", "Nguyễn Huệ", "Lê Lợi", "Phan Bội Châu"],
+      "answer": "Lê Lợi",
+      "difficulty": 1
+    },
+    {
+      "question": "Năm nào diễn ra Cách mạng tháng Tám?",
+      "options": ["1945", "1930", "1954", "1975"],
+      "answer": "1945",
+      "difficulty": 1
+    },
+    {
+      "question": "Chiến dịch Điện Biên Phủ kết thúc vào ngày nào?",
+      "options": ["7/5/1954", "30/4/1975", "2/9/1945", "19/12/1946"],
+      "answer": "7/5/1954",
+      "difficulty": 2
+    },
+    {
+      "question": "Ai là Tổng Bí thư đầu tiên của Đảng Cộng sản Việt Nam?",
+      "options": ["Hồ Chí Minh", "Trường Chinh", "Nguyễn Ái Quốc", "Trần Phú"],
+      "answer": "Trần Phú",
+      "difficulty": 2
+    },
+    {
+      "question": "Hiệp định Paris được ký vào năm nào?",
+      "options": ["1973", "1975", "1968", "1954"],
+      "answer": "1973",
+      "difficulty": 3
+    },
+    {
+      "question": "Nhà Lý dời đô từ Hoa Lư ra Thăng Long vào năm nào?",
+      "options": ["1010", "1009", "1054", "1025"],
+      "answer": "1010",
+      "difficulty": 1
+    },
+    {
+      "question": "Ai là người lãnh đạo khởi nghĩa Hai Bà Trưng?",
+      "options": ["Trưng Trắc và Trưng Nhị", "Triệu Thị Trinh và Trưng Trắc", "Trưng Nhị và Bà Triệu", "Bà Triệu và Trần Quốc Toản"],
+      "answer": "Trưng Trắc và Trưng Nhị",
+      "difficulty": 1
+    },
+    {
+      "question": "Năm 938, chiến thắng Bạch Đằng do ai chỉ huy?",
+      "options": ["Ngô Quyền", "Lê Hoàn", "Lý Thường Kiệt", "Trần Hưng Đạo"],
+      "answer": "Ngô Quyền",
+      "difficulty": 1
+    },
+    {
+      "question": "Trong kháng chiến chống Nguyên Mông lần thứ 3 (1287–1288), trận Bạch Đằng lần 3 diễn ra vào năm nào?",
+      "options": ["1288", "1285", "1287", "1293"],
+      "answer": "1288",
+      "difficulty": 2
+    },
+    {
+      "question": "Hội nghị thành lập Đảng Cộng sản Việt Nam diễn ra ở đâu?",
+      "options": ["Hồng Kông", "Quảng Châu", "Pác Bó", "Hà Nội"],
+      "answer": "Hồng Kông",
+      "difficulty": 2
+    },
+    {
+      "question": "Ai là vua đầu tiên của triều Nguyễn?",
+      "options": ["Gia Long", "Minh Mạng", "Thiệu Trị", "Tự Đức"],
+      "answer": "Gia Long",
+      "difficulty": 1
+    },
+    {
+      "question": "Trận Chi Lăng năm 1427 diễn ra trong cuộc kháng chiến chống quân nào?",
+      "options": ["Nguyên Mông", "Minh", "Tống", "Thanh"],
+      "answer": "Minh",
+      "difficulty": 2
+    },
+    {
+      "question": "Phong trào Đông Du do ai khởi xướng?",
+      "options": ["Phan Bội Châu", "Phan Châu Trinh", "Nguyễn Ái Quốc", "Huỳnh Thúc Kháng"],
+      "answer": "Phan Bội Châu",
+      "difficulty": 2
+    },
+    {
+      "question": "Câu nói 'Đánh cho để dài tóc, đánh cho để đen răng' gắn liền với nhân vật lịch sử nào?",
+      "options": ["Trưng Trắc", "Trưng Nhị", "Bà Triệu", "Lý Chiêu Hoàng"],
+      "answer": "Bà Triệu",
+      "difficulty": 2
+    },
+    {
+      "question": "Tại Hội nghị Trung ương 6 (11/1939), chủ trương chiến lược của cách mạng Việt Nam được điều chỉnh như thế nào?",
+      "options": [
+        "Tạm gác khẩu hiệu cách mạng ruộng đất, tập trung giải phóng dân tộc",
+        "Đẩy mạnh cải cách ruộng đất",
+        "Liên minh với Pháp chống Nhật",
+        "Thành lập chính quyền Xô viết"
+      ],
+      "answer": "Tạm gác khẩu hiệu cách mạng ruộng đất, tập trung giải phóng dân tộc",
+      "difficulty": 3
+    },
+    {
+      "question": "Trận Vạn Tường (1965) là chiến thắng lớn đầu tiên chống lại chiến lược nào của Mỹ?",
+      "options": [
+        "Chiến tranh cục bộ",
+        "Chiến tranh đặc biệt",
+        "Việt Nam hóa chiến tranh",
+        "Chiến tranh phá hoại"
+      ],
+      "answer": "Chiến tranh cục bộ",
+      "difficulty": 3
+    },
+    {
+      "question": "Ai là người chỉ huy chiến dịch Biên giới Thu - Đông 1950?",
+      "options": ["Võ Nguyên Giáp", "Hoàng Văn Thái", "Nguyễn Chí Thanh", "Trường Chinh"],
+      "answer": "Võ Nguyên Giáp",
+      "difficulty": 3
+    },
+    {
+      "question": "Nội dung chính của Chỉ thị 'Nhật – Pháp bắn nhau và hành động của chúng ta' (3/1945) là gì?",
+      "options": [
+        "Phát động cao trào kháng Nhật cứu nước",
+        "Kêu gọi nhân dân chống Pháp",
+        "Tập trung xây dựng lực lượng chính trị",
+        "Tạm hoãn khởi nghĩa"
+      ],
+      "answer": "Phát động cao trào kháng Nhật cứu nước",
+      "difficulty": 3
+    },
+    {
+      "question": "Chiến dịch nào trong kháng chiến chống Pháp đã buộc Pháp phải ký Hiệp định Giơnevơ?",
+      "options": [
+        "Chiến dịch Điện Biên Phủ",
+        "Chiến dịch Biên giới 1950",
+        "Chiến dịch Việt Bắc 1947",
+        "Chiến dịch Thượng Lào"
+      ],
+      "answer": "Chiến dịch Điện Biên Phủ",
+      "difficulty": 3
+    },
+    {
+      "question": "Ai là người đứng đầu Chính phủ Cách mạng Lâm thời Cộng hòa miền Nam Việt Nam khi mới thành lập?",
+      "options": ["Huỳnh Tấn Phát", "Nguyễn Hữu Thọ", "Phạm Hùng", "Võ Chí Công"],
+      "answer": "Huỳnh Tấn Phát",
+      "difficulty": 3
+    }
+  ],
+  "bai_2": [
+    {
+      "question": "Chính sách 'Ngụ binh ư nông' được áp dụng dưới triều đại nào?",
+      "options": ["Nhà Lý", "Nhà Trần", "Nhà Lê sơ", "Nhà Nguyễn"],
+      "answer": "Nhà Trần",
+      "difficulty": 2
+    },
+    {
+      "question": "Bản Tuyên ngôn Độc lập ngày 2/9/1945 được đọc tại đâu?",
+      "options": ["Quảng trường Ba Đình", "Phủ Chủ tịch", "Nhà hát Lớn Hà Nội", "Hội trường Thống Nhất"],
+      "answer": "Quảng trường Ba Đình",
+      "difficulty": 1
+    },
+    {
+      "question": "Trong kháng chiến chống Pháp, chiến dịch Biên giới Thu-Đông diễn ra vào năm nào?",
+      "options": ["1950", "1951", "1949", "1953"],
+      "answer": "1950",
+      "difficulty": 2
+    },
+    {
+      "question": "Ai là người chủ trì Hội nghị Diên Hồng thời Trần?",
+      "options": ["Trần Thánh Tông", "Trần Nhân Tông", "Trần Hưng Đạo", "Trần Quang Khải"],
+      "answer": "Trần Nhân Tông",
+      "difficulty": 2
+    },
+    {
+      "question": "Nguyên nhân chính dẫn đến thất bại của khởi nghĩa Yên Thế (1884–1913) là gì?",
+      "options": [
+        "Lực lượng nghĩa quân suy yếu, Pháp tăng cường đàn áp",
+        "Thiếu lương thực",
+        "Mâu thuẫn nội bộ",
+        "Thiên tai liên tiếp"
+      ],
+      "answer": "Lực lượng nghĩa quân suy yếu, Pháp tăng cường đàn áp",
+      "difficulty": 3
+    },
+    {
+      "question": "Trong Hội nghị Trung ương 8 (5/1941), Đảng Cộng sản Đông Dương đã xác định nhiệm vụ hàng đầu là gì?",
+      "options": [
+        "Giành độc lập dân tộc",
+        "Cải cách ruộng đất",
+        "Kháng chiến chống Nhật",
+        "Thành lập chính quyền dân chủ"
+      ],
+      "answer": "Giành độc lập dân tộc",
+      "difficulty": 3
+    },
+    {
+      "question": "Hiệp định Giơnevơ năm 1954 quy định Việt Nam tạm thời bị chia cắt ở vĩ tuyến nào?",
+      "options": ["17", "16", "18", "15"],
+      "answer": "17",
+      "difficulty": 3
+    },
+    {
+      "question": "Ai là người viết tác phẩm 'Đường Kách Mệnh' (1927)?",
+      "options": ["Hồ Chí Minh", "Trần Phú", "Nguyễn Văn Cừ", "Phạm Văn Đồng"],
+      "answer": "Hồ Chí Minh",
+      "difficulty": 3
+    },
+    {
+      "question": "Trong cuộc Tổng tiến công và nổi dậy mùa Xuân 1975, chiến dịch nào được xem là trận quyết chiến chiến lược cuối cùng?",
+      "options": ["Chiến dịch Hồ Chí Minh", "Chiến dịch Huế – Đà Nẵng", "Chiến dịch Tây Nguyên", "Chiến dịch Đường 14 – Phước Long"],
+      "answer": "Chiến dịch Hồ Chí Minh",
+      "difficulty": 3
+    },
+    {
+      "question": "Trong kháng chiến chống Mỹ, đường mòn Hồ Chí Minh trên biển chủ yếu xuất phát từ tỉnh nào?",
+      "options": ["Quảng Bình", "Hải Phòng", "Bến Tre", "Quảng Ngãi"],
+      "answer": "Hải Phòng",
+      "difficulty": 3
+    },
+    {
+      "question": "Phong trào Xô viết Nghệ – Tĩnh bùng nổ mạnh nhất vào năm nào?",
+      "options": ["1930", "1931", "1932", "1929"],
+      "answer": "1931",
+      "difficulty": 2
+    },
+    {
+      "question": "Hội nghị Quân sự cách mạng Bắc Kỳ (4/1945) đã quyết định điều gì quan trọng?",
+      "options": [
+        "Thành lập Ủy ban khởi nghĩa toàn quốc",
+        "Thành lập Ủy ban giải phóng dân tộc",
+        "Thành lập Đội Việt Nam Tuyên truyền Giải phóng quân",
+        "Phát động tổng khởi nghĩa ngay lập tức"
+      ],
+      "answer": "Thành lập Ủy ban khởi nghĩa toàn quốc",
+      "difficulty": 3
+    },
+    {
+      "question": "Ai là người đề xướng chủ trương 'Hòa để tiến' trong giai đoạn 1946?",
+      "options": ["Hồ Chí Minh", "Võ Nguyên Giáp", "Trường Chinh", "Phạm Văn Đồng"],
+      "answer": "Hồ Chí Minh",
+      "difficulty": 3
+    },
+    {
+      "question": "Chiến dịch nào được coi là 'Điện Biên Phủ trên không'?",
+      "options": [
+        "Chiến dịch 12 ngày đêm Hà Nội - Điện Biên Phủ trên không",
+        "Chiến dịch Hồ Chí Minh",
+        "Chiến dịch Quảng Trị 1972",
+        "Chiến dịch Đường 9 - Nam Lào"
+      ],
+      "answer": "Chiến dịch 12 ngày đêm Hà Nội - Điện Biên Phủ trên không",
+      "difficulty": 3
+    },
+    {
+      "question": "Nội dung chính của Tạm ước 14/9/1946 là gì?",
+      "options": [
+        "Nhượng bộ một số quyền lợi cho Pháp để hòa hoãn",
+        "Thành lập chính quyền liên hiệp",
+        "Tạm chia Việt Nam thành hai miền",
+        "Chia sẻ quyền lực với Nhật"
+      ],
+      "answer": "Nhượng bộ một số quyền lợi cho Pháp để hòa hoãn",
+      "difficulty": 3
+    },
+    {
+      "question": "Chiến dịch nào đánh dấu bước ngoặt chiến lược, buộc Mỹ phải xuống thang chiến tranh ở miền Bắc Việt Nam?",
+      "options": [
+        "Chiến dịch Mậu Thân 1968",
+        "Chiến dịch Đường 9 - Nam Lào",
+        "Chiến dịch Quảng Trị 1972",
+        "Chiến dịch Tây Nguyên"
+      ],
+      "answer": "Chiến dịch Mậu Thân 1968",
+      "difficulty": 3
+    },
+    {
+      "question": "Ai là Tổng tư lệnh Quân đội Nhân dân Việt Nam trong suốt hai cuộc kháng chiến chống Pháp và Mỹ?",
+      "options": ["Võ Nguyên Giáp", "Nguyễn Chí Thanh", "Hoàng Văn Thái", "Trường Chinh"],
+      "answer": "Võ Nguyên Giáp",
+      "difficulty": 3
+    },
+    {
+      "question": "Hiệp định sơ bộ Việt – Pháp được ký vào ngày nào?",
+      "options": ["6/3/1946", "14/9/1946", "20/7/1954", "27/1/1973"],
+      "answer": "6/3/1946",
+      "difficulty": 3
+    },
+    {
+      "question": "Lực lượng vũ trang đầu tiên của cách mạng Việt Nam được thành lập vào ngày nào?",
+      "options": ["22/12/1944", "2/9/1945", "19/8/1945", "19/12/1946"],
+      "answer": "22/12/1944",
+      "difficulty": 3
+    },
+    {
+      "question": "Phong trào 'Đồng khởi' năm 1960 nổ ra đầu tiên ở tỉnh nào?",
+      "options": ["Bến Tre", "Trà Vinh", "Quảng Ngãi", "Tiền Giang"],
+      "answer": "Bến Tre",
+      "difficulty": 3
+    }
+  ]
+}

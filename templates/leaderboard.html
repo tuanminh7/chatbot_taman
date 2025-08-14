@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Bảng Vinh Danh</title>
+    <style>
+        body {
+            background-color: #14213d;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        table {
+            margin: auto;
+            border-collapse: collapse;
+            width: 70%;
+            background-color: #222;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #555;
+        }
+        th {
+            background-color: #fca311;
+            color: black;
+        }
+        tr:nth-child(even) {
+            background-color: #333;
+        }
+        a {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 10px 20px;
+            background-color: #ff4d6d;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🏆 Bảng Vinh Danh</h2>
+    <table>
+        <tr>
+            <th>Hạng</th>
+            <th>Nickname</th>
+            <th>Điểm</th>
+            <th>Thời gian</th>
+        </tr>
+        {% for player in players %}
+        <tr>
+            <td>
+                {% if loop.index == 1 %}
+                    🥇
+                {% elif loop.index == 2 %}
+                    🥈
+                {% elif loop.index == 3 %}
+                    🥉
+                {% else %}
+                    {{ loop.index }}
+                {% endif %}
+            </td>
+            <td>{{ player.nickname }}</td>
+            <td>{{ player.score }}</td>
+            <td>{{ player.time }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a href="/">🔁 Thi lại</a>
+</body>
+</html>

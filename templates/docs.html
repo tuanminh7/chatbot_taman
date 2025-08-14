@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Danh sách tài liệu</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    color: #2c3e50;
+  }
+  .top-bar {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background: #3498db;
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  }
+  .btn-back {
+    background: white;
+    color: #3498db;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: 700;
+    margin-right: 20px;
+    transition: background 0.3s, color 0.3s;
+    text-decoration: none;
+    user-select: none;
+  }
+  .btn-back:hover {
+    background: #217dbb;
+    color: white;
+  }
+  h1 {
+    margin: 0;
+    font-size: 24px;
+  }
+  .container {
+    display: flex;
+    height: calc(100vh - 58px);
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    background: white;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  /* Khung đọc tài liệu bên trái */
+  .viewer {
+    flex: 3;
+    border-right: 1px solid #ddd;
+  }
+  .viewer iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  /* Danh sách tài liệu bên phải */
+  .doc-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .doc-list h2 {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 20px;
+  }
+  .doc-item {
+    background: #eef4fb;
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.05);
+  }
+  .doc-item:hover, .doc-item.active {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 4px 12px rgb(52 152 219 / 0.4);
+  }
+  .doc-item:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Responsive cho điện thoại */
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+      height: auto;
+      max-width: 100%;
+      margin: 10px;
+      border-radius: 8px;
+      box-shadow: none;
+    }
+    .viewer {
+      flex: none;
+      height: 50vh;
+      border-right: none;
+      border-bottom: 1px solid #ddd;
+    }
+    .doc-list {
+      flex: none;
+      height: auto;
+      max-height: 40vh;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    .doc-list h2 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .doc-item {
+      padding: 10px;
+      font-size: 16px;
+    }
+    .top-bar {
+      justify-content: center;
+    }
+    .btn-back {
+      margin-right: 10px;
+      padding: 8px 14px;
+      font-size: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="top-bar">
+    <a href="/" class="btn-back" aria-label="Quay về menu">← Quay về Menu</a>
+    <h1>Danh sách tài liệu</h1>
+  </div>
+
+  <div class="container">
+    <div class="viewer">
+      <iframe id="docViewer" src="" allowfullscreen></iframe>
+    </div>
+    <div class="doc-list">
+      <h2>Tài liệu</h2>
+      <div id="docs"></div>
+    </div>
+  </div>
+
+<script>
+  // Danh sách tài liệu
+  const docs_list = [
+    {
+      title: "Tài liệu Anh 12",
+      link: "https://docs.google.com/document/d/1_pXGbZQHw_OeWcpYwQYw1Yu4vKxBMV6fZWxm4dmsXLg/preview"
+    },
+    {
+      title: "Tài liệu Lý 12",
+      link: "https://docs.google.com/document/d/1_pXGbZQHw_OeWcpYwQYw1Yu4vKxBMV6fZWxm4dmsXLg/preview"
+    },
+    {
+      title: "Tài liệu Toán 12",
+      link: "https://drive.google.com/file/d/xxx/preview"
+    },
+    {
+      title: "Tài liệu Hóa 12",
+      link: "https://drive.google.com/file/d/zzz/preview"
+    }
+  ];
+
+  const docsContainer = document.getElementById('docs');
+  const iframe = document.getElementById('docViewer');
+
+  function clearActive() {
+    document.querySelectorAll('.doc-item').forEach(el => {
+      el.classList.remove('active');
+    });
+  }
+
+  function loadDoc(index) {
+    const doc = docs_list[index];
+    if(!doc.link) {
+      alert("Chưa có link tài liệu này!");
+      return;
+    }
+    iframe.src = doc.link;
+    clearActive();
+    document.querySelectorAll('.doc-item')[index].classList.add('active');
+  }
+
+  function init() {
+    docs_list.forEach((doc, idx) => {
+      const div = document.createElement('div');
+      div.className = 'doc-item';
+      div.textContent = doc.title;
+      div.addEventListener('click', () => loadDoc(idx));
+      docsContainer.appendChild(div);
+    });
+
+    if(docs_list.length > 0) {
+      loadDoc(0);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>

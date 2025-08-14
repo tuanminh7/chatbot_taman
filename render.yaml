@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: chatbot-gmi
+    env: python
+    buildCommand: ""
+    startCommand: python app.py

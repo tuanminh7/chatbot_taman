@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Trợ lý AI Phạm Hằng</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #e0f7fa, #fce4ec);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 700px;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+        }
+
+        .topic-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+
+        .topic-buttons a {
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            background: #1976d2;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+
+        .topic-buttons a:hover {
+            background: #1565c0;
+        }
+
+        .topic-buttons a.active {
+            background: #43a047;
+        }
+
+        form textarea {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+
+        form input[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background: #43a047;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        form input[type="submit"]:hover {
+            background: #388e3c;
+        }
+
+        .response {
+            margin-top: 20px;
+            background: #f1f8e9;
+            padding: 15px;
+            border-left: 5px solid #8bc34a;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-size: 16px;
+            color: #333;
+        }
+
+        @media (max-width: 600px) {
+            .topic-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>Trợ lý AI Phạm Hằng</h2>
+        <div class="topic-buttons">
+            <a href="?topic=tam_li" class="{% if topic == 'tam_li' %}active{% endif %}">🧠 Tư vấn tâm lý</a>
+            <a href="?topic=stress" class="{% if topic == 'stress' %}active{% endif %}">😣 Tư vấn stress</a>
+            <a href="?topic=nghe_nghiep" class="{% if topic == 'nghe_nghiep' %}active{% endif %}">🎓 Tư vấn nghề nghiệp</a>
+        </div>
+        <form method="POST">
+            <textarea name="user_input" rows="4" placeholder="Nhập điều bạn muốn chia sẻ..."></textarea>
+            <input type="submit" value="Gửi câu hỏi">
+        </form>
+        {% if response %}
+        <div class="response">
+            <strong>Trợ lý:</strong><br>{{ response }}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

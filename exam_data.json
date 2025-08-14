@@ -1,0 +1,198 @@
+{
+  "de1": {
+    "video": "https://www.youtube.com/embed/abc123",
+    "multiple_choice": [
+      {
+        "question": "Ai là người lãnh đạo cuộc khởi nghĩa Lam Sơn?",
+        "options": ["Nguyễn Huệ", "Trần Hưng Đạo", "Lê Lợi", "Phan Bội Châu"],
+        "answer": "Lê Lợi"
+      },
+      {
+        "question": "Chiến thắng Điện Biên Phủ diễn ra vào năm nào?",
+        "options": ["1954", "1945", "1968", "1975"],
+        "answer": "1954"
+      },
+      {
+        "question": "Nhà Nguyễn được thành lập bởi ai?",
+        "options": ["Gia Long", "Minh Mạng", "Thiệu Trị", "Tự Đức"],
+        "answer": "Gia Long"
+      },
+      {
+        "question": "Phong trào Đông Du do ai khởi xướng?",
+        "options": ["Phan Châu Trinh", "Phan Bội Châu", "Huỳnh Thúc Kháng", "Trương Vĩnh Ký"],
+        "answer": "Phan Bội Châu"
+      },
+      {
+        "question": "Hiệp định Paris về Việt Nam được ký năm nào?",
+        "options": ["1973", "1975", "1968", "1954"],
+        "answer": "1973"
+      },
+      {
+        "question": "Thời kỳ Bắc thuộc kéo dài bao nhiêu năm?",
+        "options": ["1000 năm", "500 năm", "200 năm", "700 năm"],
+        "answer": "1000 năm"
+      },
+      {
+        "question": "Ai là vị vua đầu tiên của nhà Trần?",
+        "options": ["Trần Nhân Tông", "Trần Thái Tông", "Trần Hưng Đạo", "Trần Quốc Tuấn"],
+        "answer": "Trần Thái Tông"
+      },
+      {
+        "question": "Cách mạng tháng Tám diễn ra vào năm nào?",
+        "options": ["1945", "1954", "1930", "1975"],
+        "answer": "1945"
+      },
+      {
+        "question": "Ai là Tổng Bí thư đầu tiên của Đảng Cộng sản Việt Nam?",
+        "options": ["Trường Chinh", "Lê Duẩn", "Nguyễn Ái Quốc", "Trần Phú"],
+        "answer": "Trần Phú"
+      },
+      {
+        "question": "Chiến dịch Hồ Chí Minh bắt đầu vào tháng nào?",
+        "options": ["Tháng 4/1975", "Tháng 3/1975", "Tháng 5/1975", "Tháng 2/1975"],
+        "answer": "Tháng 4/1975"
+      }
+    ],
+    "true_false": [
+      {
+        "question": "Các phát biểu về lịch sử Việt Nam:",
+        "statements": [
+          "Lý Thái Tổ là người sáng lập triều Lý.",
+          "Chiến dịch Điện Biên Phủ kết thúc vào năm 1975.",
+          "Phan Châu Trinh chủ trương bạo động vũ trang.",
+          "Hội nghị Diên Hồng diễn ra dưới thời Trần."
+        ],
+        "answers": [true, false, false, true]
+      }
+    ]
+  },
+  "de2": {
+    "video": "https://www.youtube.com/embed/abc123",
+    "multiple_choice": [
+      {
+        "question": "Ai là người viết Tuyên ngôn độc lập năm 1945?",
+        "options": ["Trường Chinh", "Hồ Chí Minh", "Phạm Văn Đồng", "Võ Nguyên Giáp"],
+        "answer": "Hồ Chí Minh"
+      },
+      {
+        "question": "Nhà Tây Sơn do ai sáng lập?",
+        "options": ["Nguyễn Huệ", "Nguyễn Nhạc", "Nguyễn Lữ", "Nguyễn Ánh"],
+        "answer": "Nguyễn Nhạc"
+      },
+      {
+        "question": "Chiến thắng Bạch Đằng năm 938 do ai lãnh đạo?",
+        "options": ["Ngô Quyền", "Lê Hoàn", "Đinh Bộ Lĩnh", "Trần Hưng Đạo"],
+        "answer": "Ngô Quyền"
+      },
+      {
+        "question": "Ai là người lãnh đạo cuộc khởi nghĩa Hai Bà Trưng?",
+        "options": ["Trưng Trắc", "Trưng Nhị", "Triệu Thị Trinh", "Ngô Quyền"],
+        "answer": "Trưng Trắc"
+      },
+      {
+        "question": "Chiến dịch Hồ Chí Minh giải phóng Sài Gòn vào năm nào?",
+        "options": ["1975", "1973", "1968", "1954"],
+        "answer": "1975"
+      },
+      {
+        "question": "Ai là người lãnh đạo cuộc khởi nghĩa Yên Thế?",
+        "options": ["Hoàng Hoa Thám", "Phan Bội Châu", "Nguyễn Thiện Thuật", "Trương Định"],
+        "answer": "Hoàng Hoa Thám"
+      },
+      {
+        "question": "Hội nghị Genève về Đông Dương diễn ra năm nào?",
+        "options": ["1954", "1973", "1945", "1968"],
+        "answer": "1954"
+      },
+      {
+        "question": "Ai là người sáng lập triều Đinh?",
+        "options": ["Đinh Bộ Lĩnh", "Lê Hoàn", "Ngô Quyền", "Lý Thái Tổ"],
+        "answer": "Đinh Bộ Lĩnh"
+      },
+      {
+        "question": "Phong trào Cần Vương nhằm mục tiêu gì?",
+        "options": ["Khôi phục nhà Nguyễn", "Chống Pháp", "Cải cách giáo dục", "Thành lập quốc hội"],
+        "answer": "Chống Pháp"
+      },
+      {
+        "question": "Ai là người lãnh đạo chiến dịch Điện Biên Phủ?",
+        "options": ["Võ Nguyên Giáp", "Hồ Chí Minh", "Trường Chinh", "Phạm Văn Đồng"],
+        "answer": "Võ Nguyên Giáp"
+      }
+    ],
+    "true_false": [
+      {
+        "question": "Các phát biểu về lịch sử Việt Nam:",
+        "statements": [
+          "Ngô Quyền đánh bại quân Nam Hán trên sông Bạch Đằng.",
+          "Hồ Chí Minh sinh năm 1890.",
+          "Chiến dịch Hồ Chí Minh diễn ra năm 1954.",
+          "Phan Bội Châu chủ trương cải cách giáo dục."
+        ],
+        "answers": [true, true, false, false]
+      }
+    ]
+  },
+  "de3": {
+    "video": "https://www.youtube.com/embed/abc123",
+    "multiple_choice": [
+      {
+        "question": "Ai là người sáng lập triều Lý?",
+        "options": ["Lý Thái Tổ", "Lý Nhân Tông", "Lý Thường Kiệt", "Lý Công Uẩn"],
+        "answer": "Lý Thái Tổ"
+      },
+      {
+        "question": "Chiến thắng Chi Lăng diễn ra dưới triều đại nào?",
+        "options": ["Lê", "Trần", "Nguyễn", "Tây Sơn"],
+        "answer": "Lê"
+      },
+      {
+        "question": "Ai là người lãnh đạo cuộc khởi nghĩa Ba Đình?",
+        "options": ["Phan Đình Phùng", "Đinh Công Tráng", "Hoàng Hoa Thám", "Nguyễn Thiện Thuật"],
+        "answer": "Đinh Công Tráng"
+      },
+      {
+        "question": "Phong trào Duy Tân do ai khởi xướng?",
+        "options": ["Phan Châu Trinh", "Phan Bội Châu", "Trương Vĩnh Ký", "Nguyễn Trường Tộ"],
+        "answer": "Phan Châu Trinh"
+      },
+      {
+        "question": "Ai là người lãnh đạo cuộc khởi nghĩa Hương Khê?",
+        "options": ["Phan Đình Phùng", "Trương Định", "Hoàng Hoa Thám", "Nguyễn Thiện Thuật"],
+        "answer": "Phan Đình Phùng"
+      },
+      {
+        "question": "Chiến dịch Biên giới Thu - Đông năm 1950 do ai chỉ huy?",
+        "options": ["Võ Nguyên Giáp", "Hồ Chí Minh", "Trường Chinh", "Phạm Văn Đồng"],
+        "answer": "Võ Nguyên Giáp"
+      },
+      {
+        "question": "Ai là người lãnh đạo cuộc khởi nghĩa Trà Lân?",
+        "options": ["Lê Lợi", "Nguyễn Trãi", "Trần Quốc Toản", "Trần Hưng Đạo"],
+        "answer": "Lê Lợi"
+      },
+      {
+        "question": "Phong trào Cần Vương nhằm mục tiêu gì?",
+        "options": ["Khôi phục nhà Nguyễn", "Chống Pháp", "Cải cách giáo dục", "Thành lập quốc hội"],
+        "answer": "Chống Pháp"
+      },
+      {
+        "question": "Ai là người lãnh đạo chiến dịch Điện Biên Phủ?",
+        "options": ["Võ Nguyên Giáp", "Hồ Chí Minh", "Trường Chinh", "Phạm Văn Đồng"],
+        "answer": "Võ Nguyên Giáp"
+      }
+    ],
+    "true_false": [
+      {
+        "question": "Các phát biểu về lịch sử Việt Nam:",
+        "statements": [
+          "Ngô Quyền đánh bại quân Nam Hán trên sông Bạch Đằng.",
+          "Hồ Chí Minh sinh năm 1890.",
+          "Chiến dịch Hồ Chí Minh diễn ra năm 1954.",
+          "Phan Bội Châu chủ trương cải cách giáo dục."
+        ],
+        "answers": [true, true, false, false]
+      }
+    ]
+  }
+}
