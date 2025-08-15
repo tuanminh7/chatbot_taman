@@ -89,7 +89,10 @@
 </head>
 <body>
 <div class="container">
-    <h1>Nhật ký cảm xúc</h1>
+    <div class="btn-back">
+        <a href="{{ url_for('menu') }}">⬅ Trở về Menu</a>
+        </div>
+        <h1>Nhật ký cảm xúc</h1>
 
     {% if message %}
     <div class="message">{{ message }}</div>

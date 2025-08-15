@@ -36,8 +36,8 @@ app.secret_key = "phuonganh2403"
 
 vn_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 timestamp = datetime.now(vn_timezone).strftime("%Y-%m-%d %H:%M:%S")
-
-os.environ["GOOGLE_API_KEY"] = "AIzaSyCviosQe-qIKt_MhseTVXO7GEYzmCkVSmE"
+#AIzaSyCviosQe-qIKt_MhseTVXO7GEYzmCkVSmE
+os.environ["GOOGLE_API_KEY"] = "AIzaSyB6VIzIMt-Eax92Zt9GPQeiM0wE2KLo090"
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 model = genai.GenerativeModel("models/gemini-1.5-flash")
 #
@@ -519,8 +519,13 @@ def export_pdf():
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
 
+    # 🔤 Đăng ký font Roboto từ thư mục fonts/
+    font_path = os.path.join('fonts', 'Roboto-VariableFont_wdth,wght.ttf')
+    pdfmetrics.registerFont(TTFont('Roboto', font_path))
+
+    # 🎨 Gán font Roboto cho tất cả các style
     for style_name in styles.byName:
-        styles[style_name].fontName = 'Arial'
+        styles[style_name].fontName = 'Roboto'
 
     elements = []
     elements.append(Paragraph(f"📓 Nhật ký cảm xúc của {username}", styles['Title']))
@@ -543,6 +548,8 @@ def export_pdf():
                      download_name=f"nhat_ky_cam_xuc_{username}.pdf",
                      mimetype='application/pdf')
 
+
+###############
 @app.route("/")
 def main_menu():  # Đổi tên hàm từ 'home' sang 'main_menu'
     return render_template("menu.html")
@@ -863,4 +870,7 @@ def get_questions():
         questions = json.load(f)
     selected = random.sample(questions, min(10, len(questions)))
     return jsonify(selected)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
