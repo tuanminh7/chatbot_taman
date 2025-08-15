@@ -828,41 +828,74 @@ def get_questions_quiz():
         random.shuffle(q["options"])
     return jsonify(questions[:20])
 
+# ✅ API nộp điểm theo từng bài
 @app.route("/submit_score", methods=["POST"])
 def submit_score():
     nickname = session.get("nickname")
+    bai = session.get("bai")  # ✅ lấy tên bài từ session
     score = request.json["score"]
+
     if not nickname:
         return jsonify({"status": "error", "message": "No nickname found"})
+    if not bai:
+        return jsonify({"status": "error", "message": "No bai found"})
+
     if not os.path.exists("scores.json"):
         with open("scores.json", "w", encoding="utf-8") as f:
             json.dump([], f)
+
     with open("scores.json", "r+", encoding="utf-8") as f:
         scores = json.load(f)
         now = datetime.now().strftime("%d/%m/%Y %H:%M")
-        existing = next((s for s in scores if s["nickname"] == nickname), None)
+
+        # ✅ tìm điểm cũ theo nickname và bài
+        existing = next((s for s in scores if s["nickname"] == nickname and s.get("bai") == bai), None)
+
         if existing:
             if score > existing["score"]:
                 existing["score"] = score
                 existing["time"] = now
         else:
-            scores.append({"nickname": nickname, "score": score, "time": now})
-        scores = sorted(scores, key=lambda x: x["score"], reverse=True)[:50]
+            scores.append({
+                "nickname": nickname,
+                "score": score,
+                "time": now,
+                "bai": bai  # ✅ lưu tên bài
+            })
+
+        # ✅ giữ lại tối đa 50 điểm cao nhất cho mỗi bài
+        filtered = [s for s in scores if s.get("bai") == bai]
+        top50 = sorted(filtered, key=lambda x: x["score"], reverse=True)[:50]
+
+        # ✅ giữ lại các bài khác + top50 của bài hiện tại
+        others = [s for s in scores if s.get("bai") != bai]
+        final_scores = others + top50
+
         f.seek(0)
-        json.dump(scores, f, ensure_ascii=False, indent=2)
+        json.dump(final_scores, f, ensure_ascii=False, indent=2)
         f.truncate()
+
     return jsonify({"status": "ok"})
 
+# ✅ Trang bảng xếp hạng
 @app.route("/leaderboard")
 def leaderboard():
+    bai = session.get("bai")  # ✅ lấy tên bài từ session
+
+    if not bai:
+        bai = "bai_1"  # hoặc gán mặc định nếu chưa có
+
     if not os.path.exists("scores.json"):
         top5 = []
     else:
         with open("scores.json", "r", encoding="utf-8") as f:
             scores = json.load(f)
-        top5 = sorted(scores, key=lambda x: x["score"], reverse=True)[:5]
-    return render_template("leaderboard.html", players=top5)
- 
+
+        # ✅ lọc điểm theo bài
+        filtered = [s for s in scores if s.get("bai") == bai]
+        top5 = sorted(filtered, key=lambda x: x["score"], reverse=True)[:5]
+
+    return render_template("leaderboard.html", players=top5, bai=bai)
 
 @app.route("/get_questions")
 def get_questions():
