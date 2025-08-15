@@ -871,6 +871,4 @@ def get_questions():
     selected = random.sample(questions, min(10, len(questions)))
     return jsonify(selected)
 
-if __name__ == '__main__':
-    app.run(debug=True)
 
