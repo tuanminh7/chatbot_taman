@@ -28,7 +28,6 @@ from utils.gemini_api import analyze_text_with_gemini
 from datetime import datetime, timezone
 
 
-# Lấy thời gian UTC có timezone-aware
 datetime.now(timezone.utc)
 
 app = Flask(__name__)
@@ -37,9 +36,11 @@ app.secret_key = "phuonganh2403"
 vn_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 timestamp = datetime.now(vn_timezone).strftime("%Y-%m-%d %H:%M:%S")
 #AIzaSyCviosQe-qIKt_MhseTVXO7GEYzmCkVSmE
-os.environ["GOOGLE_API_KEY"] = "AIzaSyB6VIzIMt-Eax92Zt9GPQeiM0wE2KLo090"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyDx4KnyXaBKZIVHiFuiDjBUwkX8tPY8XuQ"
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-model = genai.GenerativeModel("models/gemini-1.5-flash")
+
+# Dùng model Gemini 2.0
+model = genai.GenerativeModel("models/gemini-2.0-flash")
 #
 app.config['UPLOAD_FOLDER'] = 'uploads'
 ################
@@ -415,8 +416,6 @@ def holland_test():
     return render_template("holland.html", questions=questions_holland)
 
 USERS_FILE = 'users.json'
-
-# Hàm đọc & ghi file JSON
 def load_users():
     if not os.path.exists(USERS_FILE):
         return {}
@@ -575,7 +574,7 @@ def chat():
 
     Câu hỏi: {user_message}
     """
-    model = genai.GenerativeModel("models/gemini-1.5-flash")
+    model = genai.GenerativeModel("models/gemini-2.0-flash")##########################
     response = model.generate_content(prompt)
     return jsonify({"reply": response.text})
 
@@ -625,7 +624,7 @@ QUY TẮC BẮT BUỘC:
 Người dùng hỏi: {user_message}
 """
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("models/gemini-2.0-flash")##########################
         resp = model.generate_content(prompt)
         text_reply = resp.text.strip()
     except Exception as e:
@@ -677,31 +676,25 @@ Người dùng hỏi: {user_message}
 
     return jsonify(result)
 
-
-#trắc nghiệm
-
-# Load đề thi từ file JSON
 def load_exam(de_id):
     with open('exam_data.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data.get(de_id)
 
-# Trang chọn đề
 @app.route('/index_td')
 def index_td():
     return render_template('index_tn.html')
 
-# Trang làm bài trắc nghiệm
+
 @app.route('/exam/<de_id>')
 def exam(de_id):
     questions = load_exam(de_id)
     if not questions:
         return "Không tìm thấy đề thi."
 
-    video_url = questions.get("video")  # lấy video từ JSON
+    video_url = questions.get("video")  
     return render_template('exam.html', questions=questions, de_id=de_id, video_url=video_url)
 
-# Nộp bài trắc nghiệm và nhận phản hồi từ AI
 @app.route('/submit/<de_id>', methods=['GET', 'POST'])
 def submit(de_id):
     if request.method != 'POST':
@@ -714,9 +707,9 @@ def submit(de_id):
     correct_count = 0
     total_questions = 0
     feedback = []
-    results = []  # Danh sách kết quả từng câu
+    results = [] 
 
-    # Trắc nghiệm
+
     for i, q in enumerate(questions.get("multiple_choice", [])):
         user_answer = request.form.get(f"mc_{i}")
         correct = q["answer"]
@@ -743,7 +736,7 @@ def submit(de_id):
                 results.append({"status": "Sai", "note": msg})
                 feedback.append(msg)
 
-    score = correct_count  # Mỗi câu đúng = 1 điểm
+    score = correct_count  
     summary = f"Học sinh làm đúng {correct_count} / {total_questions} câu."
     try:
         prompt = (
@@ -767,7 +760,7 @@ def submit(de_id):
         total_questions=total_questions,
         results=results
     )
-# Gửi ảnh bài làm để AI nhận xét
+
 @app.route('/upload_image', methods=['GET', 'POST'])
 def upload_image():
     ai_feedback = None
@@ -828,11 +821,10 @@ def get_questions_quiz():
         random.shuffle(q["options"])
     return jsonify(questions[:20])
 
-# ✅ API nộp điểm theo từng bài
 @app.route("/submit_score", methods=["POST"])
 def submit_score():
     nickname = session.get("nickname")
-    bai = session.get("bai")  # ✅ lấy tên bài từ session
+    bai = session.get("bai")  
     score = request.json["score"]
 
     if not nickname:
@@ -848,7 +840,6 @@ def submit_score():
         scores = json.load(f)
         now = datetime.now().strftime("%d/%m/%Y %H:%M")
 
-        # ✅ tìm điểm cũ theo nickname và bài
         existing = next((s for s in scores if s["nickname"] == nickname and s.get("bai") == bai), None)
 
         if existing:
@@ -860,14 +851,10 @@ def submit_score():
                 "nickname": nickname,
                 "score": score,
                 "time": now,
-                "bai": bai  # ✅ lưu tên bài
+                "bai": bai  
             })
-
-        # ✅ giữ lại tối đa 50 điểm cao nhất cho mỗi bài
         filtered = [s for s in scores if s.get("bai") == bai]
         top50 = sorted(filtered, key=lambda x: x["score"], reverse=True)[:50]
-
-        # ✅ giữ lại các bài khác + top50 của bài hiện tại
         others = [s for s in scores if s.get("bai") != bai]
         final_scores = others + top50
 
@@ -877,13 +864,13 @@ def submit_score():
 
     return jsonify({"status": "ok"})
 
-# ✅ Trang bảng xếp hạng
+
 @app.route("/leaderboard")
 def leaderboard():
-    bai = session.get("bai")  # ✅ lấy tên bài từ session
+    bai = session.get("bai")  
 
     if not bai:
-        bai = "bai_1"  # hoặc gán mặc định nếu chưa có
+        bai = "bai_1"  
 
     if not os.path.exists("scores.json"):
         top5 = []
@@ -904,4 +891,5 @@ def get_questions():
     selected = random.sample(questions, min(10, len(questions)))
     return jsonify(selected)
 
-
+####if __name__ == '__main__':
+   ### app.run(debug=True)
