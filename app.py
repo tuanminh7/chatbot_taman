@@ -11,7 +11,6 @@ from flask import send_file, send_from_directory, Response, stream_with_context
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, current_app
 
-# ReportLab để tạo PDF
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import A4
@@ -38,12 +37,9 @@ timestamp = datetime.now(vn_timezone).strftime("%Y-%m-%d %H:%M:%S")
 os.environ["GOOGLE_API_KEY"] = "AIzaSyDx4KnyXaBKZIVHiFuiDjBUwkX8tPY8XuQ"
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
-# Dùng model Gemini 2.0
 model = genai.GenerativeModel("models/gemini-2.0-flash")
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-################
-# HÀM ĐỌC DỮ LIỆU THEO CHỦ ĐỀ
 def load_context(topic):
     file_map = {
         "tam_li": "data_tam_li.txt",
@@ -57,9 +53,7 @@ def load_context(topic):
     except FileNotFoundError:
         return "Không tìm thấy dữ liệu phù hợp."
 
-# HÀM TẠO PROMPT THEO CHỦ ĐỀ (CẢI TIẾN)
 def build_prompt(topic, context_data, user_input, is_first_message=False):
-    # Phần dữ liệu tham khảo (rút gọn để tiết kiệm token)
     context_summary = context_data[:1500] if context_data else ""
     
     if topic == "tam_li":
@@ -77,7 +71,7 @@ def build_prompt(topic, context_data, user_input, is_first_message=False):
             f"Trả lời:"
         )
     elif topic == "stress":
-        intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng, chuyên hỗ trợ tâm lý và stress.\n\n" if is_first_message else ""
+        intro = "Chào bạn, tôi là trợ lý AI Tâm An, chuyên hỗ trợ tâm lý và stress.\n\n" if is_first_message else ""
         return (
             f"Bạn là trợ lý AI giúp học sinh vượt qua căng thẳng.\n"
             f"Dữ liệu tham khảo:\n{context_summary}\n\n"
@@ -90,7 +84,7 @@ def build_prompt(topic, context_data, user_input, is_first_message=False):
             f"Trả lời:"
         )
     elif topic == "nghe_nghiep":
-        intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng, chuyên tư vấn định hướng nghề nghiệp.\n\n" if is_first_message else ""
+        intro = "Chào bạn, tôi là trợ lý AI của cô Tâm An, chuyên tư vấn định hướng nghề nghiệp.\n\n" if is_first_message else ""
         return (
             f"Bạn là trợ lý AI tư vấn nghề nghiệp cho học sinh.\n"
             f"Dữ liệu tham khảo:\n{context_summary}\n\n"
@@ -103,7 +97,7 @@ def build_prompt(topic, context_data, user_input, is_first_message=False):
             f"Trả lời:"
         )
     else:
-        intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng.\n\n" if is_first_message else ""
+        intro = "Chào bạn, tôi là trợ lý AI của cô Tâm An.\n\n" if is_first_message else ""
         return (
             f"Bạn là trợ lý AI thân thiện.\n"
             f"Dữ liệu tham khảo:\n{context_summary}\n\n"
@@ -114,7 +108,7 @@ def build_prompt(topic, context_data, user_input, is_first_message=False):
             f"{intro}Câu hỏi: {user_input}\n"
             f"Trả lời:"
         )
-
+##################
 @app.route("/tro_chuyen_tam_li_cung_tro_ly_ai_pham_hang", methods=["GET", "POST"])
 def tam_li_chat():
     topic = request.args.get("topic", "tam_li")
@@ -124,19 +118,39 @@ def tam_li_chat():
     if request.method == "POST":
         user_input = request.form.get("user_input")
         if user_input:
-            # Kiểm tra xem có phải tin nhắn đầu tiên không (dựa vào session)
             is_first = session.get(f'first_message_{topic}', True)
             
             prompt = build_prompt(topic, context_data, user_input, is_first_message=is_first)
             response = model.generate_content(prompt)
             response_text = response.text
             
-            # Đánh dấu không phải tin nhắn đầu nữa
+            # ✅ LOẠI BỎ MARKDOWN
+            response_text = response_text.replace('###', '')
+            response_text = response_text.replace('***', '')
+            response_text = response_text.replace('**', '')
+            response_text = response_text.replace('* ', '')
+            response_text = response_text.replace('- ', '')
+            response_text = response_text.replace('• ', '')
+            
+            # ✅ XỬ LÝ XUỐNG DÒNG CHO CÁC SỐ THỨ TỰ
+            import re
+            # Thêm 2 dòng trống trước các số thứ tự (1., 2., 3., 4., etc.)
+            response_text = re.sub(r'(\d+\.)', r'\n\n\1', response_text)
+            
+            # ✅ LOẠI BỎ DÒNG TRỐNG THỪA
+            # Loại bỏ dòng trống ở đầu văn bản
+            response_text = response_text.lstrip()
+            # Giảm dòng trống thừa (3+ dòng → 2 dòng)
+            response_text = re.sub(r'\n{3,}', '\n\n', response_text)
+            
+            # ✅ XỬ LÝ XUỐNG DÒNG SAU DẤU CHẤM HỎI
+            # Thêm dòng mới sau câu hỏi nếu câu tiếp theo bắt đầu bằng số hoặc chữ in hoa
+            response_text = re.sub(r'\?\s+(\d+\.|\w)', r'?\n\n\1', response_text)
+            
             session[f'first_message_{topic}'] = False
     
     return render_template("tam_li.html", response=response_text, topic=topic)
-
-####################
+    ##########################3
 def read_pdf(file_path):
     text = ""
     try:
@@ -210,7 +224,7 @@ def stress_test():
         answers = {int(k): int(v) for k, v in request.form.items()}
         group_D = [3, 5, 10, 13, 16, 17, 21]  
         group_A = [2, 4, 7, 9, 15, 19, 20]    
-        group_S = [1, 6, 8, 11, 12, 14, 18]   # Stress
+        group_S = [1, 6, 8, 11, 12, 14, 18]
 
         score_D = sum(answers[q] for q in group_D) * 2
         score_A = sum(answers[q] for q in group_A) * 2
@@ -543,7 +557,7 @@ def export_pdf():
         styles[style_name].fontName = 'Roboto'
 
     elements = []
-    elements.append(Paragraph(f"📓 Nhật ký cảm xúc của {username}", styles['Title']))
+    elements.append(Paragraph(f"📔 Nhật ký cảm xúc của {username}", styles['Title']))
     elements.append(Spacer(1, 20))
 
     if not history:
@@ -563,7 +577,6 @@ def export_pdf():
                      download_name=f"nhat_ky_cam_xuc_{username}.pdf",
                      mimetype='application/pdf')
 
-###############
 @app.route("/")
 def main_menu():
     return render_template("menu.html")
@@ -576,13 +589,8 @@ def docs():
 def chatbot_page():
     return render_template("index.html")
 
-# ============================================
-# PHẦN CHATBOT MỚI - STREAMING RESPONSE
-# ============================================
-
 @app.route("/chat_stream", methods=["POST"])
 def chat_stream():
-    """API streaming cho chatbot - trả lời theo thời gian thực"""
     data = request.get_json()
     user_message = data.get("message", "").strip()
     
@@ -591,29 +599,46 @@ def chat_stream():
     
     def generate():
         try:
-            # Kiểm tra tin nhắn đầu tiên
-            is_first = session.get('first_message_stream', True)
-            intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng.\n\n" if is_first else ""
+            if 'chat_history' not in session:
+                session['chat_history'] = []
             
-            # Tạo prompt với custom data (rút gọn)
+            chat_history = session['chat_history']
+            
+            is_first = len(chat_history) == 0
+            intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng về lịch sử.\n\n" if is_first else ""
+            
+            context = ""
+            if len(chat_history) > 0:
+                recent_history = chat_history[-6:]
+                context = "Lịch sử hội thoại:\n"
+                for i in range(0, len(recent_history), 2):
+                    if i+1 < len(recent_history):
+                        context += f"Người dùng: {recent_history[i]}\nTrợ lý: {recent_history[i+1]}\n"
+                context += "\n"
+            
             prompt = f"""
-Bạn là trợ lý AI thông minh của cô Phạm Hằng.
+Bạn là trợ lý AI thông minh của cô Phạm Hằng chuyên về lịch sử.
 Dữ liệu tham khảo (ưu tiên nếu liên quan):
 {custom_data[:1500]}
+
+{context}
 
 QUY TẮC QUAN TRỌNG:
 - Ưu tiên dùng dữ liệu trên nếu câu hỏi liên quan
 - Nếu không có trong dữ liệu, TỰ TIN trả lời bằng kiến thức tổng quát của bạn
 - TUYỆT ĐỐI KHÔNG nói "xin lỗi, không có dữ liệu" hay "nằm ngoài phạm vi kiến thức"
 - Trả lời tự nhiên, thân thiện như một cuộc trò chuyện thực tế
+- Nếu hỏi tiếp về câu trước, hãy dựa vào lịch sử hội thoại để trả lời liền mạch
 - Nếu họ dùng tiếng Việt thì trả lời bằng tiếng Việt
 - Chỉ giới thiệu ở câu đầu tiên, từ câu 2 trở đi trò chuyện bình thường
+- KHÔNG dùng markdown format (###, ***, **, -, •)
+- Trả lời dạng văn xuôi tự nhiên, KHÔNG dùng bullet points
+- Nếu cần liệt kê, viết thành câu văn: "Có 3 điều quan trọng: thứ nhất..., thứ hai..., thứ ba..."
 
-{intro}Câu hỏi: {user_message}
+{intro}Câu hỏi hiện tại: {user_message}
 Trả lời:
 """
             
-            # Gọi Gemini với streaming
             response = model.generate_content(
                 prompt,
                 stream=True,
@@ -624,16 +649,31 @@ Trả lời:
                 }
             )
             
-            # Đánh dấu không phải tin nhắn đầu nữa
-            session['first_message_stream'] = False
+            chat_history.append(user_message)
+            full_response = ""
             
-            # Stream từng chunk về client
             for chunk in response:
                 if chunk.text:
-                    data = json.dumps({"text": chunk.text}, ensure_ascii=False)
+                    clean_text = chunk.text
+                    clean_text = clean_text.replace('###', '')
+                    clean_text = clean_text.replace('***', '')
+                    clean_text = clean_text.replace('**', '')
+                    clean_text = clean_text.replace('* ', '')
+                    clean_text = clean_text.replace('- ', '')
+                    clean_text = clean_text.replace('• ', '')
+                    
+                    full_response += clean_text
+                    data = json.dumps({"text": clean_text}, ensure_ascii=False)
                     yield f"data: {data}\n\n"
             
-            # Gửi tín hiệu kết thúc
+            chat_history.append(full_response)
+            
+            if len(chat_history) > 20:
+                chat_history = chat_history[-20:]
+            
+            session['chat_history'] = chat_history
+            session.modified = True
+            
             yield f"data: {json.dumps({'done': True})}\n\n"
             
         except Exception as e:
@@ -652,40 +692,72 @@ Trả lời:
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    """API chatbot cũ (fallback - không streaming)"""
     user_message = request.json.get("message", "")
     
-    # Kiểm tra tin nhắn đầu tiên
-    is_first = session.get('first_message_general', True)
-    intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng.\n\n" if is_first else ""
+    if 'chat_history' not in session:
+        session['chat_history'] = []
+    
+    chat_history = session['chat_history']
+    is_first = len(chat_history) == 0
+    intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng về lịch sử.\n\n" if is_first else ""
+    
+    context = ""
+    if len(chat_history) > 0:
+        recent_history = chat_history[-6:]
+        context = "Lịch sử hội thoại:\n"
+        for i in range(0, len(recent_history), 2):
+            if i+1 < len(recent_history):
+                context += f"Người dùng: {recent_history[i]}\nTrợ lý: {recent_history[i+1]}\n"
+        context += "\n"
     
     prompt = f"""
-Bạn là trợ lý AI thông minh của cô Phạm Hằng.
+Bạn là trợ lý AI thông minh của cô Phạm Hằng chuyên về lịch sử.
 Dữ liệu tham khảo (ưu tiên nếu liên quan):
 {custom_data[:1500]}
+
+{context}
 
 QUY TẮC QUAN TRỌNG:
 - Ưu tiên sử dụng dữ liệu trên nếu câu hỏi liên quan
 - Nếu không có trong dữ liệu, TỰ TIN trả lời bằng kiến thức của bạn
 - KHÔNG BAO GIỜ nói "xin lỗi, không có dữ liệu" hoặc "nằm ngoài phạm vi"
 - Trả lời tự nhiên, thân thiện như cuộc hội thoại thực tế
+- Nếu hỏi tiếp về câu trước, dựa vào lịch sử để trả lời liền mạch
 - Nếu họ nói tiếng Việt thì trả lời bằng tiếng Việt
 - Câu đầu tiên có thể giới thiệu ngắn gọn, từ câu 2 trở đi không cần
+- KHÔNG dùng markdown format (###, ***, **, -, •)
+- Trả lời dạng văn xuôi tự nhiên
 
-{intro}Câu hỏi: {user_message}
+{intro}Câu hỏi hiện tại: {user_message}
 Trả lời:
     """
     
     response = model.generate_content(prompt)
+    reply_text = response.text
     
-    # Đánh dấu không phải tin nhắn đầu nữa
-    session['first_message_general'] = False
+    reply_text = reply_text.replace('###', '')
+    reply_text = reply_text.replace('***', '')
+    reply_text = reply_text.replace('**', '')
+    reply_text = reply_text.replace('* ', '')
+    reply_text = reply_text.replace('- ', '')
+    reply_text = reply_text.replace('• ', '')
     
-    return jsonify({"reply": response.text})
+    chat_history.append(user_message)
+    chat_history.append(reply_text)
+    
+    if len(chat_history) > 20:
+        chat_history = chat_history[-20:]
+    
+    session['chat_history'] = chat_history
+    session.modified = True
+    
+    return jsonify({"reply": reply_text})
 
-# ============================================
-# KẾT THÚC PHẦN CHATBOT MỚI
-# ============================================
+@app.route("/clear_chat", methods=["POST"])
+def clear_chat():
+    session['chat_history'] = []
+    session.modified = True
+    return jsonify({"status": "ok"})
 
 AUDIO_DIR = os.path.join(os.path.dirname(__file__), "static", "replies")
 os.makedirs(AUDIO_DIR, exist_ok=True)
@@ -696,7 +768,7 @@ def load_user_data():
             return f.read()
     except FileNotFoundError:
         return ""
-
+###############################################
 def random_filename(prefix="reply", ext="mp3", n=8):
     s = "".join(random.choices(string.ascii_lowercase + string.digits, k=n))
     return f"{prefix}_{s}.{ext}"
@@ -724,12 +796,19 @@ QUY TẮC BẮT BUỘC:
 - Nếu mô hình dự định dùng từ tiếng Anh, hãy thay bằng từ tiếng Việt tương đương.
 - Giọng thân thiện, tự nhiên như một người bạn.
 - Câu trả lời ngắn gọn, dưới 3 câu.
+- KHÔNG sử dụng markdown (**, ##, ###) trong câu trả lời.
 
 Người dùng hỏi: {user_message}
 """
     try:
         resp = model.generate_content(prompt)
         text_reply = resp.text.strip()
+        
+        # Format lại response: loại bỏ markdown
+        text_reply = text_reply.replace('**', '')
+        text_reply = text_reply.replace('##', '')
+        text_reply = text_reply.replace('###', '')
+        
     except Exception as e:
         print("Lỗi khi gọi Gemini:", e)
         text_reply = "Xin lỗi, hiện tại tôi không thể trả lời ngay. Bạn thử lại sau nhé."
@@ -739,6 +818,12 @@ Người dùng hỏi: {user_message}
             follow_prompt = prompt + "\n\nBạn đã sử dụng từ tiếng Anh, hãy trả lời lại hoàn toàn bằng tiếng Việt."
             resp2 = model.generate_content(follow_prompt)
             text_reply = resp2.text.strip()
+            
+            # Format lại lần nữa sau khi retry
+            text_reply = text_reply.replace('**', '')
+            text_reply = text_reply.replace('##', '')
+            text_reply = text_reply.replace('###', '')
+            
         except Exception as e:
             print("Lỗi follow-up Gemini:", e)
 
@@ -778,16 +863,16 @@ Người dùng hỏi: {user_message}
         result["audio_url"] = None
 
     return jsonify(result)
-
+####################################################
 def load_exam(de_id):
     with open('exam_data.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return data.get(de_id)
-
+###########################################################3
 @app.route('/index_td')
 def index_td():
     return render_template('index_tn.html')
-
+#########################################################
 @app.route('/exam/<de_id>')
 def exam(de_id):
     questions = load_exam(de_id)
@@ -850,8 +935,16 @@ def submit(de_id):
         )
         response = model.generate_content([prompt])
         ai_feedback = response.text
+        
+        # Format lại response: thay thế markdown bằng HTML
+        ai_feedback = ai_feedback.replace('**', '')
+        ai_feedback = ai_feedback.replace('##', '')
+        ai_feedback = ai_feedback.replace('###', '')
+        ai_feedback = ai_feedback.replace('\n', '<br>')
+        
     except Exception as e:
         ai_feedback = f"⚠ Lỗi khi gọi AI: {str(e)}"
+    
     return render_template(
         'result.html',
         score=score,
@@ -880,10 +973,18 @@ def upload_image():
                 "Đây là ảnh bài làm của học sinh. Hãy phân tích nội dung, chỉ ra lỗi sai nếu có, và đề xuất cải thiện."
             ])
             ai_feedback = response.text
+            
+            # Format lại response: thay thế markdown bằng HTML
+            ai_feedback = ai_feedback.replace('**', '')
+            ai_feedback = ai_feedback.replace('##', '')
+            ai_feedback = ai_feedback.replace('###', '')
+            ai_feedback = ai_feedback.replace('\n', '<br>')
+            
         except Exception as e:
             ai_feedback = f"⚠ Lỗi khi xử lý ảnh: {str(e)}"
 
     return render_template('upload_image.html', feedback=ai_feedback)
+    ##########################################
 
 @app.route("/tam_an")
 def tam_an():
@@ -982,12 +1083,66 @@ def leaderboard():
 
     return render_template("leaderboard.html", players=top5, bai=bai)
 
-@app.route("/get_questions")
-def get_questions():
-    with open("questions.json", "r", encoding="utf-8") as f:
-        questions = json.load(f)
-    selected = random.sample(questions, min(10, len(questions)))
-    return jsonify(selected)
+###############
+@app.route('/dich-vu-y-te')
+def dich_vu():
+    """Route hiển thị danh sách các cơ sở y tế tại Hà Nội"""
+    
+    # Dữ liệu các cơ sở y tế
+    co_so_y_te = [
+        {
+            'ten': 'Công ty CP Tham vấn, Nghiên cứu và Tâm lý học Cuộc sống - SHARE',
+            'dia_chi': '31 Ngõ 84 Trần Quang Diệu, Quang Trung, Đống Đa, Hà Nội',
+            'dien_thoai': '024 22116989',
+            'website': 'tuvantamly.com.vn',
+            'loai': 'Tư vấn tâm lý'
+        },
+        {
+            'ten': 'Bệnh viện Tâm thần ban ngày Mai Hương',
+            'dia_chi': '4 Hồng Mai, Bạch Mai, Hai Bà Trưng, Hà Nội',
+            'dien_thoai': '024 3627 5762',
+            'website': 'http://www.maihuong.gov.vn/',
+            'loai': 'Bệnh viện tâm thần'
+        },
+        {
+            'ten': 'Bệnh viện Tâm thần Hà Nội',
+            'dia_chi': 'Ngõ 467 Nguyễn Văn Linh, Sài Đồng, Long Biên, Hà Nội',
+            'dien_thoai': '024 3827 6534',
+            'website': '',
+            'loai': 'Bệnh viện tâm thần'
+        },
+        {
+            'ten': 'Bệnh viện Tâm thần Trung ương I',
+            'dia_chi': 'Hòa Bình - Thượng Tín - Hà Nội',
+            'dien_thoai': '02433.853.227',
+            'website': '',
+            'loai': 'Bệnh viện tâm thần'
+        },
+        {
+            'ten': 'Khoa Tâm thần - Bệnh viện Quân Y 103',
+            'dia_chi': '261 Phùng Hưng - Hà Đông - Hà Nội',
+            'dien_thoai': '',
+            'website': '',
+            'loai': 'Khoa tâm thần'
+        },
+        {
+            'ten': 'Khoa Tâm bệnh học và Liệu pháp tâm lý, Bệnh viện Việt Pháp Hà Nội',
+            'dia_chi': '1 Phương Mai, Phương Mai, Đống Đa, Hà Nội',
+            'dien_thoai': '024 3577 1100',
+            'website': '',
+            'loai': 'Khoa tâm thần'
+        },
+        {
+            'ten': 'Khoa Tâm thần - Bệnh viện Nhi trung ương',
+            'dia_chi': '18/879 đường La Thành, Láng Thượng, quận Đống Đa, Hà Nội',
+            'dien_thoai': '024 6273 8965 hoặc 024 6273 8964',
+            'website': '',
+            'loai': 'Khoa tâm thần'
+        }
+    ]
+    
+    return render_template('dichvu.html', co_so_y_te=co_so_y_te)
+
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)

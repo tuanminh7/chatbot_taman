@@ -57,7 +57,6 @@
 
   .avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
 
-  /* Typing indicator */
   .typing-indicator {
     display: inline-flex;
     gap: 4px;
@@ -134,6 +133,14 @@
   }
   
   audio{width:100%;margin-top:8px;border-radius:8px;height:32px}
+  
+  .play-btn{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 12px;margin-top:8px;
+    background:var(--accent);color:white;border:none;
+    border-radius:6px;cursor:pointer;font-size:12px;
+  }
+  .play-btn:hover{background:#2563eb}
 
   @media (max-width: 480px) {
     .frame{height:100vh;border-radius:0}
@@ -179,6 +186,7 @@ const statusText = document.getElementById('statusText');
 const statusDot = status.querySelector('.status-dot');
 
 let isProcessing = false;
+let currentAudio = null;
 
 function addMessage(text, who, audioUrl=null) {
   const row = document.createElement('div');
@@ -204,11 +212,31 @@ function addMessage(text, who, audioUrl=null) {
   msgs.scrollTop = msgs.scrollHeight;
 
   if (audioUrl) {
-    const audio = document.createElement('audio');
-    audio.controls = true;
-    audio.src = audioUrl;
-    audio.autoplay = true;
-    bubble.appendChild(audio);
+    // Tạo nút play thay vì autoplay (tránh bị chặn trên mobile)
+    const playBtn = document.createElement('button');
+    playBtn.className = 'play-btn';
+    playBtn.innerHTML = '🔊 Nghe giọng đọc';
+    playBtn.onclick = () => {
+      // Dừng audio cũ nếu có
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      
+      const audio = new Audio(audioUrl);
+      currentAudio = audio;
+      audio.play().catch(err => {
+        console.warn('Không thể play audio:', err);
+        alert('Không thể phát audio. Vui lòng kiểm tra kết nối.');
+      });
+      
+      playBtn.textContent = '⏸️ Đang phát...';
+      audio.onended = () => {
+        playBtn.innerHTML = '🔊 Nghe lại';
+        currentAudio = null;
+      };
+    };
+    bubble.appendChild(playBtn);
   }
   
   return bubble;
@@ -249,18 +277,6 @@ function updateStatus(text, isStreaming = false) {
   }
 }
 
-// Fallback TTS nếu không có audio
-function speakFallback(text) {
-  try {
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'vi-VN';
-    u.rate = 1;
-    speechSynthesis.speak(u);
-  } catch (e) {
-    console.warn('Fallback TTS lỗi', e);
-  }
-}
-
 // GỬI MESSAGE VỚI STREAMING
 async function sendToServer(message) {
   if (isProcessing) return;
@@ -280,9 +296,13 @@ async function sendToServer(message) {
     
     removeTyping();
     
-    if (!res.ok) throw new Error('Network error');
+    if (!res.ok) {
+      throw new Error('Network error: ' + res.status);
+    }
     
     const data = await res.json();
+    console.log('Response data:', data); // Debug
+    
     const reply = data.reply || 'Xin lỗi, tôi không trả lời được.';
     
     // Tạo bubble bot với streaming effect
@@ -308,18 +328,38 @@ async function sendToServer(message) {
       currentText += (i > 0 ? ' ' : '') + words[i];
       bubble.textContent = currentText;
       msgs.scrollTop = msgs.scrollHeight;
-      await new Promise(resolve => setTimeout(resolve, 30)); // Delay giữa các từ
+      await new Promise(resolve => setTimeout(resolve, 30));
     }
     
-    // Thêm audio nếu có
+    // Thêm nút play audio nếu có
     if (data.audio_url) {
-      const audio = document.createElement('audio');
-      audio.controls = true;
-      audio.src = data.audio_url;
-      audio.autoplay = true;
-      bubble.appendChild(audio);
+      console.log('Audio URL:', data.audio_url); // Debug
+      
+      const playBtn = document.createElement('button');
+      playBtn.className = 'play-btn';
+      playBtn.innerHTML = '🔊 Nghe giọng đọc';
+      playBtn.onclick = () => {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        
+        const audio = new Audio(data.audio_url);
+        currentAudio = audio;
+        audio.play().catch(err => {
+          console.error('Play audio error:', err);
+          alert('Không thể phát audio. Vui lòng thử lại.');
+        });
+        
+        playBtn.textContent = '⏸️ Đang phát...';
+        audio.onended = () => {
+          playBtn.innerHTML = '🔊 Nghe lại';
+          currentAudio = null;
+        };
+      };
+      bubble.appendChild(playBtn);
     } else {
-      speakFallback(reply);
+      console.warn('Không có audio_url trong response');
     }
     
     updateStatus('Sẵn sàng', false);
@@ -327,7 +367,7 @@ async function sendToServer(message) {
   } catch (e) {
     removeTyping();
     addMessage('❌ Lỗi kết nối. Vui lòng thử lại!', 'bot');
-    console.error(e);
+    console.error('Send error:', e);
     updateStatus('Lỗi', false);
   } finally {
     isProcessing = false;
@@ -375,7 +415,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   };
   
   recognition.onerror = (e) => {
-    console.error(e);
+    console.error('Speech recognition error:', e);
     mic.classList.remove('recording');
     updateStatus('Lỗi nhận diện', false);
   };
@@ -396,7 +436,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         recognition.start();
       }
     } catch(e) {
-      console.error(e);
+      console.error('Mic error:', e);
     }
   });
 

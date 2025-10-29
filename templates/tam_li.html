@@ -205,6 +205,13 @@
             opacity: 0.8;
         }
 
+        /* ✅ THÊM: Giữ xuống dòng và format */
+        .message-content {
+            white-space: pre-line;
+            line-height: 1.8;
+            word-wrap: break-word;
+        }
+
         /* TYPING INDICATOR */
         .typing-indicator {
             display: none;
@@ -404,10 +411,6 @@
         const sendBtn = document.getElementById('sendBtn');
         let isProcessing = false;
 
-        // Debug: Kiểm tra button có hoạt động không
-        console.log('Send button element:', sendBtn);
-        console.log('Button disabled status:', sendBtn.disabled);
-
         // Auto resize textarea
         userInput.addEventListener('input', function() {
             this.style.height = 'auto';
@@ -497,10 +500,6 @@
             sendBtn.disabled = true;
 
             try {
-                // Get current topic from URL
-                const urlParams = new URLSearchParams(window.location.search);
-                const topic = urlParams.get('topic') || 'tam_li';
-
                 const response = await fetch(window.location.href, {
                     method: 'POST',
                     headers: {
@@ -510,7 +509,6 @@
                 });
 
                 const html = await response.text();
-                // Parse response và hiển thị
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
                 const responseDiv = doc.querySelector('.response');
@@ -519,14 +517,19 @@
                     removeTyping();
                     const text = responseDiv.textContent.trim();
                     const botContent = addMessage('', false);
-                    const words = text.split(' ');
-                    let currentText = '';
                     
-                    for (let i = 0; i < words.length; i++) {
-                        currentText += (i > 0 ? ' ' : '') + words[i];
-                        botContent.textContent = currentText;
-                        await new Promise(resolve => setTimeout(resolve, 30));
-                    }
+                    // ✅ Hiển thị từng ký tự mượt mà hơn
+                    let currentIndex = 0;
+                    
+                    const typeWriter = setInterval(() => {
+                        if (currentIndex < text.length) {
+                            botContent.textContent += text.charAt(currentIndex);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                            currentIndex++;
+                        } else {
+                            clearInterval(typeWriter);
+                        }
+                    }, 15);
                 } else {
                     removeTyping();
                     addMessage('Không nhận được phản hồi từ server.', false);
@@ -546,14 +549,12 @@
         sendBtn.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('Send button clicked!', 'isProcessing:', isProcessing);
             sendMessage();
         });
         
         userInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                console.log('Enter key pressed!');
                 sendMessage();
             }
         });
@@ -569,7 +570,7 @@
                 const welcome = document.querySelector('.welcome-message');
                 if (welcome) welcome.remove();
                 
-                // Note: User message sẽ được lưu qua sessionStorage
+                // User message từ sessionStorage
                 const lastUserMsg = sessionStorage.getItem('lastUserMessage');
                 if (lastUserMsg) {
                     addMessage(lastUserMsg, true);
@@ -579,16 +580,18 @@
                 // Hiển thị bot response
                 const text = hiddenResponse.textContent.trim();
                 const botContent = addMessage('', false);
-                const words = text.split(' ');
-                let currentText = '';
                 
-                (async () => {
-                    for (let i = 0; i < words.length; i++) {
-                        currentText += (i > 0 ? ' ' : '') + words[i];
-                        botContent.textContent = currentText;
-                        await new Promise(resolve => setTimeout(resolve, 30));
+                let currentIndex = 0;
+                
+                const typeWriter = setInterval(() => {
+                    if (currentIndex < text.length) {
+                        botContent.textContent += text.charAt(currentIndex);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        currentIndex++;
+                    } else {
+                        clearInterval(typeWriter);
                     }
-                })();
+                }, 15);
             }
         });
     </script>
