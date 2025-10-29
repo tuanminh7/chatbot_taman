@@ -4,9 +4,10 @@ import json
 import re
 import random
 import base64
+import string
 from PIL import Image
 from datetime import datetime
-from flask import send_file
+from flask import send_file, send_from_directory, Response, stream_with_context
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, current_app
 
@@ -17,7 +18,6 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-
 import google.generativeai as genai
 import PyPDF2
 import pytz
@@ -27,7 +27,6 @@ from utils.ocr import extract_text_from_image
 from utils.gemini_api import analyze_text_with_gemini
 from datetime import datetime, timezone
 
-
 datetime.now(timezone.utc)
 
 app = Flask(__name__)
@@ -35,17 +34,16 @@ app.secret_key = "phuonganh2403"
 
 vn_timezone = pytz.timezone('Asia/Ho_Chi_Minh')
 timestamp = datetime.now(vn_timezone).strftime("%Y-%m-%d %H:%M:%S")
-#AIzaSyCviosQe-qIKt_MhseTVXO7GEYzmCkVSmE
+
 os.environ["GOOGLE_API_KEY"] = "AIzaSyDx4KnyXaBKZIVHiFuiDjBUwkX8tPY8XuQ"
 genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
 
 # Dùng model Gemini 2.0
 model = genai.GenerativeModel("models/gemini-2.0-flash")
-#
 app.config['UPLOAD_FOLDER'] = 'uploads'
-################
 
-# Hàm đọc dữ liệu theo chủ đề
+################
+# HÀM ĐỌC DỮ LIỆU THEO CHỦ ĐỀ
 def load_context(topic):
     file_map = {
         "tam_li": "data_tam_li.txt",
@@ -59,36 +57,62 @@ def load_context(topic):
     except FileNotFoundError:
         return "Không tìm thấy dữ liệu phù hợp."
 
-# Hàm tạo prompt theo chủ đề
-def build_prompt(topic, context_data, user_input):
+# HÀM TẠO PROMPT THEO CHỦ ĐỀ (CẢI TIẾN)
+def build_prompt(topic, context_data, user_input, is_first_message=False):
+    # Phần dữ liệu tham khảo (rút gọn để tiết kiệm token)
+    context_summary = context_data[:1500] if context_data else ""
+    
     if topic == "tam_li":
+        intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng chuyên về lĩnh vực lịch sử.\n\n" if is_first_message else ""
         return (
-            f"Bạn là một trợ lý AI thân thiện, chuyên tư vấn tâm lý cho học sinh.\n"
-            f"Dưới đây là dữ liệu liên quan đến tâm lý học sinh:\n{context_data}\n\n"
-            f"Hãy kết hợp dữ liệu này với kiến thức bạn đã học để trả lời câu hỏi sau "
-            f"một cách nhẹ nhàng, đồng cảm, tránh từ ngữ tiêu cực:\n\n"
-            f"Câu hỏi của học sinh: {user_input}\nTrợ lý:"
+            f"Bạn là trợ lý AI của cô Phạm Hằng, chuyên về lịch sử.\n"
+            f"Dữ liệu tham khảo:\n{context_summary}\n\n"
+            f"QUY TẮC:\n"
+            f"- Ưu tiên dùng dữ liệu trên nếu liên quan\n"
+            f"- Nếu không có trong dữ liệu, dùng kiến thức chung của bạn để trả lời\n"
+            f"- KHÔNG BAO GIỜ nói 'xin lỗi, không có dữ liệu' hay 'nằm ngoài phạm vi'\n"
+            f"- Trả lời tự nhiên, thân thiện như một cuộc hội thoại bình thường\n"
+            f"- Câu đầu tiên: giới thiệu. Từ câu 2 trở đi: không cần giới thiệu lại\n\n"
+            f"{intro}Câu hỏi: {user_input}\n"
+            f"Trả lời:"
         )
     elif topic == "stress":
+        intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng, chuyên hỗ trợ tâm lý và stress.\n\n" if is_first_message else ""
         return (
-            f"Bạn là một trợ lý AI giúp học sinh vượt qua căng thẳng và áp lực học tập.\n"
-            f"Dưới đây là dữ liệu liên quan đến stress:\n{context_data}\n\n"
-            f"Hãy trả lời câu hỏi sau với giọng điệu trấn an, đưa ra lời khuyên giúp học sinh bình tĩnh:\n\n"
-            f"Câu hỏi của học sinh: {user_input}\nTrợ lý:"
+            f"Bạn là trợ lý AI giúp học sinh vượt qua căng thẳng.\n"
+            f"Dữ liệu tham khảo:\n{context_summary}\n\n"
+            f"QUY TẮC:\n"
+            f"- Trả lời với giọng điệu trấn an, đồng cảm\n"
+            f"- Dùng dữ liệu nếu có, không thì dùng kiến thức chung\n"
+            f"- KHÔNG nói 'xin lỗi, không biết'\n"
+            f"- Trò chuyện tự nhiên, không rập khuôn\n\n"
+            f"{intro}Câu hỏi: {user_input}\n"
+            f"Trả lời:"
         )
     elif topic == "nghe_nghiep":
+        intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng, chuyên tư vấn định hướng nghề nghiệp.\n\n" if is_first_message else ""
         return (
-            f"Bạn là một trợ lý AI chuyên tư vấn định hướng nghề nghiệp cho học sinh.\n"
-            f"Dưới đây là dữ liệu liên quan đến lựa chọn nghề nghiệp:\n{context_data}\n\n"
-            f"Hãy trả lời câu hỏi sau với giọng điệu khích lệ, giúp học sinh khám phá bản thân và đưa ra lời khuyên phù hợp:\n\n"
-            f"Câu hỏi của học sinh: {user_input}\nTrợ lý:"
+            f"Bạn là trợ lý AI tư vấn nghề nghiệp cho học sinh.\n"
+            f"Dữ liệu tham khảo:\n{context_summary}\n\n"
+            f"QUY TẮC:\n"
+            f"- Khích lệ, giúp học sinh khám phá bản thân\n"
+            f"- Dùng dữ liệu nếu có, không thì đưa ra lời khuyên từ kiến thức chung\n"
+            f"- KHÔNG từ chối trả lời\n"
+            f"- Trò chuyện tự nhiên\n\n"
+            f"{intro}Câu hỏi: {user_input}\n"
+            f"Trả lời:"
         )
     else:
+        intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng.\n\n" if is_first_message else ""
         return (
-            f"Bạn là một trợ lý AI thân thiện, chuyên tư vấn cho học sinh.\n"
-            f"Dưới đây là dữ liệu liên quan đến chủ đề '{topic}':\n{context_data}\n\n"
-            f"Hãy trả lời câu hỏi sau một cách nhẹ nhàng và có tính hỗ trợ tâm lý:\n\n"
-            f"Câu hỏi của học sinh: {user_input}\nTrợ lý:"
+            f"Bạn là trợ lý AI thân thiện.\n"
+            f"Dữ liệu tham khảo:\n{context_summary}\n\n"
+            f"QUY TẮC:\n"
+            f"- Trả lời tự nhiên, thân thiện\n"
+            f"- Dùng cả dữ liệu và kiến thức chung\n"
+            f"- KHÔNG từ chối hay xin lỗi khi không có dữ liệu\n\n"
+            f"{intro}Câu hỏi: {user_input}\n"
+            f"Trả lời:"
         )
 
 @app.route("/tro_chuyen_tam_li_cung_tro_ly_ai_pham_hang", methods=["GET", "POST"])
@@ -96,15 +120,21 @@ def tam_li_chat():
     topic = request.args.get("topic", "tam_li")
     context_data = load_context(topic)
     response_text = ""
+    
     if request.method == "POST":
         user_input = request.form.get("user_input")
         if user_input:
-            prompt = build_prompt(topic, context_data, user_input)
+            # Kiểm tra xem có phải tin nhắn đầu tiên không (dựa vào session)
+            is_first = session.get(f'first_message_{topic}', True)
+            
+            prompt = build_prompt(topic, context_data, user_input, is_first_message=is_first)
             response = model.generate_content(prompt)
             response_text = response.text
+            
+            # Đánh dấu không phải tin nhắn đầu nữa
+            session[f'first_message_{topic}'] = False
+    
     return render_template("tam_li.html", response=response_text, topic=topic)
-
-
 
 ####################
 def read_pdf(file_path):
@@ -123,15 +153,13 @@ custom_data = ""
 if os.path.exists("data.txt"):
     with open("data.txt", "r", encoding="utf-8") as f:
         custom_data += f.read() + "\n"
+        
 pdf_folder = "data"
 if os.path.exists(pdf_folder):
     for file_name in os.listdir(pdf_folder):
         if file_name.lower().endswith(".pdf"):
             file_path = os.path.join(pdf_folder, file_name)
             custom_data += read_pdf(file_path) + "\n"
-
-
-
 
 docs_list = [
     {
@@ -184,12 +212,10 @@ def stress_test():
         group_A = [2, 4, 7, 9, 15, 19, 20]    
         group_S = [1, 6, 8, 11, 12, 14, 18]   # Stress
 
-      
         score_D = sum(answers[q] for q in group_D) * 2
         score_A = sum(answers[q] for q in group_A) * 2
         score_S = sum(answers[q] for q in group_S) * 2
 
-     
         def classify_D(score):
             if score <= 9: return "Bình thường"
             elif score <= 13: return "Nhẹ"
@@ -219,7 +245,6 @@ def stress_test():
             level_S=classify_S(score_S)
         )
 
-  
     questions = [
         "Tôi thấy khó mà thoải mái được",
         "Tôi bị khô miệng",
@@ -238,7 +263,7 @@ def stress_test():
         "Tôi thấy mình gần như hoảng loạn",
         "Tôi không thấy hứng thú với bất kỳ việc gì nữa",
         "Tôi cảm thấy mình chẳng đáng làm người",
-        "Tôi thấy mình khá dễ phật ý, tự ái",
+        "Tôi thấy mình khá dễ phát ý, tự ái",
         "Tôi nghe thấy rõ tiếng nhịp tim dù chẳng làm việc gì",
         "Tôi hay sợ vô cớ",
         "Tôi thấy cuộc sống vô nghĩa"
@@ -384,12 +409,9 @@ def relax_page(mode):
         return "Trang không tồn tại", 404
     return render_template(f"relax_{mode}.html")
 
-
-
 @app.route("/holland", methods=["GET", "POST"])
 def holland_test():
     if request.method == "POST":
-        
         scores = {key: 0 for key in holland_types.keys()}
         for idx in range(1, len(questions_holland) + 1):
             ans = request.form.get(str(idx))
@@ -466,14 +488,12 @@ def emotion_journal():
     users = load_users()
     history = users.get(username, {}).get('logs', [])
 
-    # Danh sách nhạc cho từng lựa chọn
     music_videos = {
         "Đom Đóm": "https://www.youtube.com/embed/HTwrVZ0eExvuE05p",
-        "Nàng Thơ": "https://www.youtube.com/embed/HTwrVZ0eExvuE05p",
+        "Nắng Thơ": "https://www.youtube.com/embed/HTwrVZ0eExvuE05p",
         "Nevada": "https://www.youtube.com/embed/d9MyW72ELq0"
     }
 
-    
     tz_vn = pytz.timezone('Asia/Ho_Chi_Minh')
 
     if request.method == 'POST':
@@ -483,7 +503,6 @@ def emotion_journal():
         
         timestamp = datetime.now(tz_vn).strftime("%d/%m/%Y %H:%M:%S")
 
-        
         new_entry = {
             'datetime': timestamp,
             'emotion': emotion,
@@ -504,7 +523,6 @@ def emotion_journal():
                            history=history,
                            music_videos=music_videos)
 
-
 @app.route('/export_pdf')
 def export_pdf():
     if 'username' not in session:
@@ -518,11 +536,9 @@ def export_pdf():
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
 
-    # 🔤 Đăng ký font Roboto từ thư mục fonts/
     font_path = os.path.join('fonts', 'Roboto-VariableFont_wdth,wght.ttf')
     pdfmetrics.registerFont(TTFont('Roboto', font_path))
 
-    # 🎨 Gán font Roboto cho tất cả các style
     for style_name in styles.byName:
         styles[style_name].fontName = 'Roboto'
 
@@ -547,10 +563,9 @@ def export_pdf():
                      download_name=f"nhat_ky_cam_xuc_{username}.pdf",
                      mimetype='application/pdf')
 
-
 ###############
 @app.route("/")
-def main_menu():  # Đổi tên hàm từ 'home' sang 'main_menu'
+def main_menu():
     return render_template("menu.html")
 
 @app.route("/docs")
@@ -559,29 +574,122 @@ def docs():
 
 @app.route("/chatbot")
 def chatbot_page():
-    return render_template("index.html")  
+    return render_template("index.html")
+
+# ============================================
+# PHẦN CHATBOT MỚI - STREAMING RESPONSE
+# ============================================
+
+@app.route("/chat_stream", methods=["POST"])
+def chat_stream():
+    """API streaming cho chatbot - trả lời theo thời gian thực"""
+    data = request.get_json()
+    user_message = data.get("message", "").strip()
+    
+    if not user_message:
+        return jsonify({"error": "Không có tin nhắn"}), 400
+    
+    def generate():
+        try:
+            # Kiểm tra tin nhắn đầu tiên
+            is_first = session.get('first_message_stream', True)
+            intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng.\n\n" if is_first else ""
+            
+            # Tạo prompt với custom data (rút gọn)
+            prompt = f"""
+Bạn là trợ lý AI thông minh của cô Phạm Hằng.
+Dữ liệu tham khảo (ưu tiên nếu liên quan):
+{custom_data[:1500]}
+
+QUY TẮC QUAN TRỌNG:
+- Ưu tiên dùng dữ liệu trên nếu câu hỏi liên quan
+- Nếu không có trong dữ liệu, TỰ TIN trả lời bằng kiến thức tổng quát của bạn
+- TUYỆT ĐỐI KHÔNG nói "xin lỗi, không có dữ liệu" hay "nằm ngoài phạm vi kiến thức"
+- Trả lời tự nhiên, thân thiện như một cuộc trò chuyện thực tế
+- Nếu họ dùng tiếng Việt thì trả lời bằng tiếng Việt
+- Chỉ giới thiệu ở câu đầu tiên, từ câu 2 trở đi trò chuyện bình thường
+
+{intro}Câu hỏi: {user_message}
+Trả lời:
+"""
+            
+            # Gọi Gemini với streaming
+            response = model.generate_content(
+                prompt,
+                stream=True,
+                generation_config={
+                    "temperature": 0.7,
+                    "top_p": 0.95,
+                    "max_output_tokens": 1024,
+                }
+            )
+            
+            # Đánh dấu không phải tin nhắn đầu nữa
+            session['first_message_stream'] = False
+            
+            # Stream từng chunk về client
+            for chunk in response:
+                if chunk.text:
+                    data = json.dumps({"text": chunk.text}, ensure_ascii=False)
+                    yield f"data: {data}\n\n"
+            
+            # Gửi tín hiệu kết thúc
+            yield f"data: {json.dumps({'done': True})}\n\n"
+            
+        except Exception as e:
+            error_msg = f"Lỗi: {str(e)}"
+            yield f"data: {json.dumps({'error': error_msg}, ensure_ascii=False)}\n\n"
+    
+    return Response(
+        stream_with_context(generate()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',
+            'Connection': 'keep-alive'
+        }
+    )
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    """API chatbot cũ (fallback - không streaming)"""
     user_message = request.json.get("message", "")
+    
+    # Kiểm tra tin nhắn đầu tiên
+    is_first = session.get('first_message_general', True)
+    intro = "Chào bạn, tôi là trợ lý AI của cô Phạm Hằng.\n\n" if is_first else ""
+    
     prompt = f"""
-    Bạn là trợ lý AI thông minh. Bạn có dữ liệu sau:
-    {custom_data}
+Bạn là trợ lý AI thông minh của cô Phạm Hằng.
+Dữ liệu tham khảo (ưu tiên nếu liên quan):
+{custom_data[:1500]}
 
-    Hãy trả lời câu hỏi của người dùng dựa trên dữ liệu trên,
-    và nếu không tìm thấy thì trả lời bằng kiến thức chung của bạn.
-    nếu họ nói chuyện bằng tiếng việt thì hãy nói lại bằng tiếng việt
+QUY TẮC QUAN TRỌNG:
+- Ưu tiên sử dụng dữ liệu trên nếu câu hỏi liên quan
+- Nếu không có trong dữ liệu, TỰ TIN trả lời bằng kiến thức của bạn
+- KHÔNG BAO GIỜ nói "xin lỗi, không có dữ liệu" hoặc "nằm ngoài phạm vi"
+- Trả lời tự nhiên, thân thiện như cuộc hội thoại thực tế
+- Nếu họ nói tiếng Việt thì trả lời bằng tiếng Việt
+- Câu đầu tiên có thể giới thiệu ngắn gọn, từ câu 2 trở đi không cần
 
-    Câu hỏi: {user_message}
+{intro}Câu hỏi: {user_message}
+Trả lời:
     """
-    model = genai.GenerativeModel("models/gemini-2.0-flash")##########################
+    
     response = model.generate_content(prompt)
+    
+    # Đánh dấu không phải tin nhắn đầu nữa
+    session['first_message_general'] = False
+    
     return jsonify({"reply": response.text})
+
+# ============================================
+# KẾT THÚC PHẦN CHATBOT MỚI
+# ============================================
 
 AUDIO_DIR = os.path.join(os.path.dirname(__file__), "static", "replies")
 os.makedirs(AUDIO_DIR, exist_ok=True)
-#chat voice bị lỗi
-# Hàm đọc dữ liệu người dùng
+
 def load_user_data():
     try:
         with open("data.txt", "r", encoding="utf-8") as f:
@@ -595,10 +703,6 @@ def random_filename(prefix="reply", ext="mp3", n=8):
 
 def contains_english(text):
     return bool(re.search(r'[A-Za-z]', text))
-
-@app.route("/")
-def index():
-    return render_template("voice_chat.html")  ###################
 
 @app.route("/replies/<path:filename>")
 def serve_reply_audio(filename):
@@ -624,7 +728,6 @@ QUY TẮC BẮT BUỘC:
 Người dùng hỏi: {user_message}
 """
     try:
-        model = genai.GenerativeModel("models/gemini-2.0-flash")##########################
         resp = model.generate_content(prompt)
         text_reply = resp.text.strip()
     except Exception as e:
@@ -645,7 +748,7 @@ Người dùng hỏi: {user_message}
         synthesis_input = texttospeech.SynthesisInput(text=text_reply)
         voice = texttospeech.VoiceSelectionParams(
             language_code="vi-VN",
-            name="vi-VN-Wavenet-A",  
+            name="vi-VN-Wavenet-A",
             ssml_gender=texttospeech.SsmlVoiceGender.FEMALE
         )
         audio_config = texttospeech.AudioConfig(
@@ -685,14 +788,13 @@ def load_exam(de_id):
 def index_td():
     return render_template('index_tn.html')
 
-
 @app.route('/exam/<de_id>')
 def exam(de_id):
     questions = load_exam(de_id)
     if not questions:
         return "Không tìm thấy đề thi."
 
-    video_url = questions.get("video")  
+    video_url = questions.get("video")
     return render_template('exam.html', questions=questions, de_id=de_id, video_url=video_url)
 
 @app.route('/submit/<de_id>', methods=['GET', 'POST'])
@@ -707,8 +809,7 @@ def submit(de_id):
     correct_count = 0
     total_questions = 0
     feedback = []
-    results = [] 
-
+    results = []
 
     for i, q in enumerate(questions.get("multiple_choice", [])):
         user_answer = request.form.get(f"mc_{i}")
@@ -722,7 +823,6 @@ def submit(de_id):
             results.append({"status": "Sai", "note": msg})
             feedback.append(msg)
 
-    # Đúng sai
     for i, tf in enumerate(questions.get("true_false", [])):
         for j, correct_tf in enumerate(tf["answers"]):
             user_tf_raw = request.form.get(f"tf_{i}_{j}", "").lower()
@@ -736,7 +836,7 @@ def submit(de_id):
                 results.append({"status": "Sai", "note": msg})
                 feedback.append(msg)
 
-    score = correct_count  
+    score = correct_count
     summary = f"Học sinh làm đúng {correct_count} / {total_questions} câu."
     try:
         prompt = (
@@ -751,7 +851,7 @@ def submit(de_id):
         response = model.generate_content([prompt])
         ai_feedback = response.text
     except Exception as e:
-        ai_feedback = f"❌ Lỗi khi gọi AI: {str(e)}"
+        ai_feedback = f"⚠ Lỗi khi gọi AI: {str(e)}"
     return render_template(
         'result.html',
         score=score,
@@ -768,7 +868,7 @@ def upload_image():
     if request.method == 'POST':
         image = request.files.get('image')
         if not image or image.filename == '':
-            return render_template('upload_image.html', feedback="❌ Không có ảnh được chọn.")
+            return render_template('upload_image.html', feedback="⚠ Không có ảnh được chọn.")
 
         image_path = os.path.join(app.config['UPLOAD_FOLDER'], image.filename)
         image.save(image_path)
@@ -781,15 +881,15 @@ def upload_image():
             ])
             ai_feedback = response.text
         except Exception as e:
-            ai_feedback = f"❌ Lỗi khi xử lý ảnh: {str(e)}"
+            ai_feedback = f"⚠ Lỗi khi xử lý ảnh: {str(e)}"
 
     return render_template('upload_image.html', feedback=ai_feedback)
-######
+
 @app.route("/tam_an")
 def tam_an():
     return render_template("chat_tam_an.html")
-##### game
-@app.route("/")
+
+@app.route("/home")
 def home():
     return render_template("menu.html")
 
@@ -824,7 +924,7 @@ def get_questions_quiz():
 @app.route("/submit_score", methods=["POST"])
 def submit_score():
     nickname = session.get("nickname")
-    bai = session.get("bai")  
+    bai = session.get("bai")
     score = request.json["score"]
 
     if not nickname:
@@ -851,7 +951,7 @@ def submit_score():
                 "nickname": nickname,
                 "score": score,
                 "time": now,
-                "bai": bai  
+                "bai": bai
             })
         filtered = [s for s in scores if s.get("bai") == bai]
         top50 = sorted(filtered, key=lambda x: x["score"], reverse=True)[:50]
@@ -864,13 +964,12 @@ def submit_score():
 
     return jsonify({"status": "ok"})
 
-
 @app.route("/leaderboard")
 def leaderboard():
-    bai = session.get("bai")  
+    bai = session.get("bai")
 
     if not bai:
-        bai = "bai_1"  
+        bai = "bai_1"
 
     if not os.path.exists("scores.json"):
         top5 = []
@@ -878,7 +977,6 @@ def leaderboard():
         with open("scores.json", "r", encoding="utf-8") as f:
             scores = json.load(f)
 
-        # ✅ lọc điểm theo bài
         filtered = [s for s in scores if s.get("bai") == bai]
         top5 = sorted(filtered, key=lambda x: x["score"], reverse=True)[:5]
 
@@ -891,5 +989,5 @@ def get_questions():
     selected = random.sample(questions, min(10, len(questions)))
     return jsonify(selected)
 
-####if __name__ == '__main__':
-   ### app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=True, threaded=True)

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Tâm An - Trợ lý AI (Voice)</title>
+<title>Tâm An - Trợ lý AI (Voice + Streaming)</title>
 <style>
   :root{
     --bg1:#eef5ff; --accent:#3b82f6; --bot:#e6f2ff; --user:#d7f9e1;
@@ -13,25 +13,43 @@
   body{
     margin:0; font-family:Inter,Segoe UI,Arial,sans-serif;
     background:linear-gradient(180deg,var(--bg1),#f7fbff);
-    display:flex;justify-content:center;align-items:center;height:100vh;
+    display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;
   }
 
   .frame{
-    width:420px;height:80vh;background:var(--card);border-radius:16px;
+    width:100%;max-width:420px;height:85vh;background:var(--card);border-radius:16px;
     box-shadow:0 10px 30px rgba(15,23,42,0.12);display:flex;flex-direction:column;overflow:hidden;
   }
 
   header{
     padding:16px;background:linear-gradient(90deg,var(--accent),#2563eb);color:#fff;
-    display:flex;gap:12px;align-items:center;
+    display:flex;gap:12px;align-items:center;position:relative;
   }
   header img{width:44px;height:44px;border-radius:50%;border:2px solid rgba(255,255,255,0.15)}
+  header .info{flex:1}
   header h1{font-size:16px;margin:0}
   header p{margin:0;font-size:12px;opacity:0.9}
+  
+  .back-btn{
+    position:absolute;right:16px;top:50%;transform:translateY(-50%);
+    background:rgba(255,255,255,0.2);border:none;color:white;
+    padding:8px 16px;border-radius:20px;cursor:pointer;font-size:13px;
+    transition:all 0.3s;text-decoration:none;
+  }
+  .back-btn:hover{background:rgba(255,255,255,0.3)}
 
-  #msgs{flex:1;padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg, rgba(59,130,246,0.03), transparent 30%);}
+  #msgs{
+    flex:1;padding:16px;overflow:auto;display:flex;flex-direction:column;gap:12px;
+    background:linear-gradient(180deg, rgba(59,130,246,0.03), transparent 30%);
+  }
   .bubble{max-width:78%;padding:10px 14px;border-radius:12px;box-shadow:0 2px 6px rgba(2,6,23,0.04);font-size:14px;line-height:1.4}
-  .row{display:flex;gap:10px;align-items:flex-end}
+  .row{display:flex;gap:10px;align-items:flex-end;animation:slideIn 0.3s ease}
+  
+  @keyframes slideIn {
+    from { opacity:0; transform:translateY(10px) }
+    to { opacity:1; transform:translateY(0) }
+  }
+  
   .row.bot{justify-content:flex-start}
   .row.user{justify-content:flex-end}
   .bubble.bot{background:var(--bot);border-bottom-left-radius:4px}
@@ -39,40 +57,114 @@
 
   .avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}
 
-  footer{padding:12px;background:#fbfdff;display:flex;gap:10px;align-items:center;border-top:1px solid #eef2ff}
-  .mic{
-    width:64px;height:64px;border-radius:50%;background:linear-gradient(180deg,#ff5966,#ff3b5c);border:none;color:white;font-size:22px;
-    display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(255,59,92,0.25);
-    transition:transform .12s,box-shadow .12s;
+  /* Typing indicator */
+  .typing-indicator {
+    display: inline-flex;
+    gap: 4px;
+    padding: 8px 12px;
+    background: var(--bot);
+    border-radius: 12px;
+    border-bottom-left-radius: 4px;
   }
-  .mic.recording{background:linear-gradient(180deg,#00c853,#00b04a);box-shadow:0 12px 30px rgba(0,200,83,0.2);transform:scale(1.03)}
+  .typing-indicator span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: typing 1.4s infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+  
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-8px); opacity: 1; }
+  }
+
+  footer{
+    padding:12px;background:#fbfdff;display:flex;gap:10px;align-items:center;
+    border-top:1px solid #eef2ff;
+  }
+  .mic{
+    width:64px;height:64px;border-radius:50%;
+    background:linear-gradient(180deg,#ff5966,#ff3b5c);
+    border:none;color:white;font-size:22px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;box-shadow:0 6px 18px rgba(255,59,92,0.25);
+    transition:transform .12s,box-shadow .12s;flex-shrink:0;
+  }
+  .mic.recording{
+    background:linear-gradient(180deg,#00c853,#00b04a);
+    box-shadow:0 12px 30px rgba(0,200,83,0.3);
+    transform:scale(1.05);
+    animation:pulse 1.5s infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { box-shadow:0 12px 30px rgba(0,200,83,0.3) }
+    50% { box-shadow:0 12px 40px rgba(0,200,83,0.5) }
+  }
+  
   .controls{flex:1;display:flex;flex-direction:column;gap:8px}
   .input-row{display:flex;gap:8px}
-  .txt{flex:1;padding:10px;border-radius:10px;border:1px solid #e6eefc;background:#fff}
-  .playFallback{font-size:13px;color:#374151;opacity:0.9}
-  audio{width:100%;margin-top:8px;border-radius:8px}
+  .txt{
+    flex:1;padding:10px;border-radius:10px;border:1px solid #e6eefc;
+    background:#fff;font-size:14px;font-family:inherit;
+  }
+  .txt:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+  
+  #sendBtn{
+    padding:10px 20px;background:var(--accent);color:white;
+    border:none;border-radius:10px;cursor:pointer;font-weight:600;
+    transition:all 0.3s;
+  }
+  #sendBtn:hover:not(:disabled){background:#2563eb;transform:translateY(-1px)}
+  #sendBtn:disabled{background:#cbd5e1;cursor:not-allowed}
+  
+  .status{font-size:12px;color:#64748b;display:flex;align-items:center;gap:6px}
+  .status.streaming{color:#00c853}
+  .status-dot{
+    width:6px;height:6px;border-radius:50%;background:currentColor;
+    animation:blink 1.5s infinite;
+  }
+  
+  @keyframes blink {
+    0%, 100% { opacity:1 }
+    50% { opacity:0.3 }
+  }
+  
+  audio{width:100%;margin-top:8px;border-radius:8px;height:32px}
+
+  @media (max-width: 480px) {
+    .frame{height:100vh;border-radius:0}
+    body{padding:0}
+  }
 </style>
 </head>
 <body>
   <div class="frame">
     <header>
       <img src="/static/images/chat_voice.jpg" alt="bot">
-      <div>
-        <h1>Tâm An</h1>
-        <p>Trợ lý AI — Nói chuyện bằng giọng Việt chuẩn</p>
+      <div class="info">
+        <h1>🎙️ Tâm An</h1>
+        <p>Trợ lý AI với giọng Việt + Streaming</p>
       </div>
+      <a href="/" class="back-btn">← Menu</a>
     </header>
 
     <div id="msgs"></div>
 
     <footer>
-      <button id="mic" class="mic">🎙</button>
+      <button id="mic" class="mic">🎙️</button>
       <div class="controls">
         <div class="input-row">
-          <input id="textInput" class="txt" placeholder="Gõ câu hỏi hoặc bấm mic để nói..." />
+          <input id="textInput" class="txt" placeholder="Gõ hoặc bấm mic để nói..." />
           <button id="sendBtn">Gửi</button>
         </div>
-        <div class="playFallback" id="fallbackNote">Nếu audio không sẵn sàng, trình duyệt sẽ đọc lại bằng giọng mặc định.</div>
+        <div class="status" id="status">
+          <span class="status-dot" style="display:none"></span>
+          <span id="statusText">Sẵn sàng</span>
+        </div>
       </div>
     </footer>
   </div>
@@ -82,11 +174,16 @@ const msgs = document.getElementById('msgs');
 const mic = document.getElementById('mic');
 const txt = document.getElementById('textInput');
 const sendBtn = document.getElementById('sendBtn');
-const fallbackNote = document.getElementById('fallbackNote');
+const status = document.getElementById('status');
+const statusText = document.getElementById('statusText');
+const statusDot = status.querySelector('.status-dot');
+
+let isProcessing = false;
 
 function addMessage(text, who, audioUrl=null) {
   const row = document.createElement('div');
   row.className = 'row ' + who;
+  
   const avatar = document.createElement('img');
   avatar.className = 'avatar';
   avatar.src = who === 'bot' ? '/static/images/chat_voice.jpg' : '/static/images/user.png';
@@ -95,22 +192,64 @@ function addMessage(text, who, audioUrl=null) {
   bubble.className = 'bubble ' + who;
   bubble.textContent = text;
 
-  row.appendChild(avatar);
-  row.appendChild(bubble);
+  if (who === 'bot') {
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+  } else {
+    row.appendChild(bubble);
+    row.appendChild(avatar);
+  }
+  
   msgs.appendChild(row);
   msgs.scrollTop = msgs.scrollHeight;
 
   if (audioUrl) {
-    // thêm audio player trong bubble
     const audio = document.createElement('audio');
     audio.controls = true;
     audio.src = audioUrl;
     audio.autoplay = true;
     bubble.appendChild(audio);
   }
+  
+  return bubble;
 }
 
-// Fallback: nếu server không có audio thì dùng speechSynthesis
+function showTyping() {
+  const row = document.createElement('div');
+  row.className = 'row bot';
+  row.id = 'typingRow';
+  
+  const avatar = document.createElement('img');
+  avatar.className = 'avatar';
+  avatar.src = '/static/images/chat_voice.jpg';
+  
+  const typing = document.createElement('div');
+  typing.className = 'typing-indicator';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  
+  row.appendChild(avatar);
+  row.appendChild(typing);
+  msgs.appendChild(row);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeTyping() {
+  const typingRow = document.getElementById('typingRow');
+  if (typingRow) typingRow.remove();
+}
+
+function updateStatus(text, isStreaming = false) {
+  statusText.textContent = text;
+  if (isStreaming) {
+    status.classList.add('streaming');
+    statusDot.style.display = 'block';
+  } else {
+    status.classList.remove('streaming');
+    statusDot.style.display = 'none';
+  }
+}
+
+// Fallback TTS nếu không có audio
 function speakFallback(text) {
   try {
     const u = new SpeechSynthesisUtterance(text);
@@ -122,32 +261,101 @@ function speakFallback(text) {
   }
 }
 
-// Gửi message text lên server
+// GỬI MESSAGE VỚI STREAMING
 async function sendToServer(message) {
+  if (isProcessing) return;
+  
   addMessage(message, 'user');
+  showTyping();
+  isProcessing = true;
+  sendBtn.disabled = true;
+  updateStatus('Đang xử lý...', true);
+  
   try {
     const res = await fetch('/chat_tam_an', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({message})
     });
+    
+    removeTyping();
+    
+    if (!res.ok) throw new Error('Network error');
+    
     const data = await res.json();
     const reply = data.reply || 'Xin lỗi, tôi không trả lời được.';
-    addMessage(reply, 'bot', data.audio_url || null);
-    if (!data.audio_url) speakFallback(reply);
+    
+    // Tạo bubble bot với streaming effect
+    const row = document.createElement('div');
+    row.className = 'row bot';
+    
+    const avatar = document.createElement('img');
+    avatar.className = 'avatar';
+    avatar.src = '/static/images/chat_voice.jpg';
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble bot';
+    
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    msgs.appendChild(row);
+    
+    // Hiển thị text từng chữ (streaming effect)
+    let currentText = '';
+    const words = reply.split(' ');
+    
+    for (let i = 0; i < words.length; i++) {
+      currentText += (i > 0 ? ' ' : '') + words[i];
+      bubble.textContent = currentText;
+      msgs.scrollTop = msgs.scrollHeight;
+      await new Promise(resolve => setTimeout(resolve, 30)); // Delay giữa các từ
+    }
+    
+    // Thêm audio nếu có
+    if (data.audio_url) {
+      const audio = document.createElement('audio');
+      audio.controls = true;
+      audio.src = data.audio_url;
+      audio.autoplay = true;
+      bubble.appendChild(audio);
+    } else {
+      speakFallback(reply);
+    }
+    
+    updateStatus('Sẵn sàng', false);
+    
   } catch (e) {
-    addMessage('Lỗi server: không thể kết nối', 'bot');
-    speakFallback('Lỗi server, bạn thử lại sau nhé.');
+    removeTyping();
+    addMessage('❌ Lỗi kết nối. Vui lòng thử lại!', 'bot');
     console.error(e);
+    updateStatus('Lỗi', false);
+  } finally {
+    isProcessing = false;
+    sendBtn.disabled = false;
   }
 }
 
-sendBtn.addEventListener('click', ()=> {
+// Xử lý gửi text
+sendBtn.addEventListener('click', () => {
   const v = txt.value.trim();
-  if (v) { sendToServer(v); txt.value=''; }
+  if (v && !isProcessing) {
+    sendToServer(v);
+    txt.value = '';
+  }
 });
 
-// Speech to text (Web Speech API)
+txt.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    const v = txt.value.trim();
+    if (v && !isProcessing) {
+      sendToServer(v);
+      txt.value = '';
+    }
+  }
+});
+
+// SPEECH RECOGNITION
 let recognition = null;
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -156,32 +364,53 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
 
-  recognition.onstart = ()=> mic.classList.add('recording');
-  recognition.onend   = ()=> mic.classList.remove('recording');
-  recognition.onerror = (e)=> { console.error(e); mic.classList.remove('recording'); };
+  recognition.onstart = () => {
+    mic.classList.add('recording');
+    updateStatus('Đang nghe...', true);
+  };
+  
+  recognition.onend = () => {
+    mic.classList.remove('recording');
+    updateStatus('Sẵn sàng', false);
+  };
+  
+  recognition.onerror = (e) => {
+    console.error(e);
+    mic.classList.remove('recording');
+    updateStatus('Lỗi nhận diện', false);
+  };
 
-  recognition.onresult = (evt)=> {
+  recognition.onresult = (evt) => {
     const text = evt.results[0][0].transcript;
+    txt.value = text;
     sendToServer(text);
   };
 
-  mic.addEventListener('click', ()=>{
+  mic.addEventListener('click', () => {
+    if (isProcessing) return;
+    
     try {
       if (mic.classList.contains('recording')) {
         recognition.stop();
       } else {
         recognition.start();
       }
-    } catch(e){ console.error(e); }
+    } catch(e) {
+      console.error(e);
+    }
   });
 
 } else {
-  // Browser không hỗ trợ SpeechRecognition
-  mic.addEventListener('click', ()=> alert('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Dùng Chrome hay Edge phiên bản mới nhé.'));
+  mic.addEventListener('click', () => {
+    alert('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Dùng Chrome hoặc Edge phiên bản mới nhé.');
+  });
 }
 
-// Load welcome
-addMessage('Xin chào! Tôi là Tâm An — bạn muốn hỏi gì hôm nay?', 'bot');
+// Welcome message
+window.addEventListener('load', () => {
+  addMessage('👋 Xin chào! Tôi là Tâm An. Bạn muốn hỏi gì hôm nay?', 'bot');
+  txt.focus();
+});
 </script>
 </body>
 </html>
